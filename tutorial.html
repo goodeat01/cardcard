@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回饋帳本 · 使用教學(語音導覽)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECE8DF; --surface:#FBFAF6; --surface-2:#F4F1EA;
+    --ink:#1E222C; --ink-soft:#6A6F7E; --ink-faint:#9A9EAA;
+    --jade:#1F7A5C; --jade-deep:#11503C; --jade-soft:#E2EFE9;
+    --gold:#BB8E3C; --line:rgba(30,34,44,.10); --line-soft:rgba(30,34,44,.06);
+    --num:'Space Grotesk',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans TC',system-ui,sans-serif;background:
+    radial-gradient(130% 100% at 80% -10%, #2a8d6c22, transparent 55%), var(--paper);
+    color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .num{font-family:var(--num);font-feature-settings:"tnum" 1}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+  .wrap{max-width:520px;margin:0 auto;padding:20px 18px 40px;display:flex;flex-direction:column;min-height:100vh}
+  header{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+  header .mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--jade),var(--jade-deep));display:grid;place-items:center;color:#fff;font-size:19px;box-shadow:0 5px 14px rgba(17,80,60,.32)}
+  header h1{font-size:18px;font-weight:900;letter-spacing:-.01em}
+  header p{font-size:11.5px;color:var(--ink-soft);font-weight:500}
+
+  .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:8px 0}
+
+  /* phone mock */
+  .phone{width:274px;height:496px;border-radius:34px;background:#12161f;padding:9px;box-shadow:0 24px 60px rgba(17,80,60,.22),0 4px 12px rgba(0,0,0,.2);flex-shrink:0}
+  .screen{width:100%;height:100%;border-radius:26px;background:var(--paper);overflow:hidden;position:relative;padding:12px 12px 0}
+  .screen.center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+  .fade{animation:fade .45s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .m-top{display:flex;align-items:center;gap:7px;margin-bottom:10px}
+  .m-logo{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--jade),var(--jade-deep));display:grid;place-items:center;color:#fff;font-size:12px}
+  .m-top b{font-size:12.5px;font-weight:900}
+  .m-top .sp{flex:1}
+  .m-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#236f86,#0c3142);display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700}
+  .m-tabs{display:flex;gap:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:11px}
+  .m-tabs span{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:var(--ink-soft);padding:6px 2px;border-radius:7px}
+  .m-tabs span.on{background:var(--surface);color:var(--jade-deep);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .m-panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px}
+  .m-lbl{font-size:10px;color:var(--ink-soft);font-weight:600;margin-bottom:4px}
+  .m-field{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12.5px;font-weight:600;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+  .m-field .v{color:var(--ink)} .m-field .ph{color:var(--ink-faint)}
+  .m-num{font-family:var(--num)}
+  .m-btn{background:var(--jade);color:#fff;text-align:center;border-radius:10px;padding:11px;font-size:13px;font-weight:700;box-shadow:0 4px 12px rgba(31,122,92,.28)}
+  .m-prev{background:var(--jade-soft);border:1px dashed rgba(31,122,92,.45);border-radius:10px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .m-prev .k{font-size:11px;color:var(--jade-deep);font-weight:600}
+  .m-prev .a{font-family:var(--num);font-size:17px;font-weight:700;color:var(--jade-deep)}
+  .m-chk{display:flex;align-items:center;gap:7px;background:var(--jade-soft);border:1px solid rgba(31,122,92,.28);border-radius:9px;padding:8px 10px;font-size:11.5px;font-weight:700;color:var(--jade-deep);margin-bottom:9px}
+  .m-chk .box{width:15px;height:15px;border-radius:4px;background:var(--jade);color:#fff;display:grid;place-items:center;font-size:10px}
+
+  .m-hero{background:radial-gradient(120% 130% at 85% 0%, #2a8d6c, var(--jade) 45%, var(--jade-deep));border-radius:15px;padding:15px;color:#fff;margin-bottom:10px}
+  .m-hero .k{font-size:9.5px;opacity:.85;letter-spacing:.1em;font-weight:600}
+  .m-hero .big{font-family:var(--num);font-size:30px;font-weight:600;line-height:1;margin-top:3px}
+  .m-hero .big small{font-size:.4em;opacity:.8;margin-right:3px}
+  .m-hero .pill{display:inline-block;background:rgba(255,255,255,.18);border-radius:99px;padding:2px 9px;font-size:10px;font-weight:600;margin-top:8px}
+  .m-split{display:flex;height:9px;border-radius:99px;overflow:hidden;margin-top:9px}
+  .m-split i{height:100%} .m-split .c{background:var(--jade)} .m-split .h{background:#6f8f7d}
+  .m-splitrow{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-soft);margin-top:5px;font-weight:600}
+
+  .m-qt{width:100%;font-size:10px;border-collapse:separate;border-spacing:0}
+  .m-qt th,.m-qt td{padding:6px 5px;text-align:center;font-weight:600}
+  .m-qt th{color:var(--ink-soft);border-bottom:1px solid var(--line)}
+  .m-qt td:first-child,.m-qt th:first-child{text-align:left}
+  .m-qt td{font-family:var(--num);color:var(--ink-soft);border-bottom:1px solid var(--line-soft)}
+  .m-qt td.first{font-family:'Noto Sans TC';color:var(--ink)}
+  .m-qt td.best{background:var(--jade);color:#fff;border-radius:6px;font-weight:700}
+
+  .m-card{border-radius:13px;padding:12px;color:#fff;position:relative;margin-bottom:9px;overflow:hidden}
+  .m-card .cn{font-size:13px;font-weight:700;margin-top:14px}
+  .m-card .cr{position:absolute;top:11px;right:12px;font-family:var(--num);font-size:16px;font-weight:700}
+  .m-card .mv{position:absolute;top:10px;left:10px;display:flex;gap:4px}
+  .m-card .mv b{width:20px;height:18px;border-radius:5px;background:rgba(0,0,0,.32);display:grid;place-items:center;font-size:9px}
+
+  .m-list .row{display:flex;align-items:center;gap:9px;padding:8px 2px;border-bottom:1px solid var(--line-soft)}
+  .m-ico{width:28px;height:28px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;font-size:14px}
+  .m-list .t{font-size:11.5px;font-weight:700} .m-list .s{font-size:9.5px;color:var(--ink-soft)}
+  .m-list .rt{margin-left:auto;text-align:right}
+  .m-list .rt .a{font-family:var(--num);font-size:12px;font-weight:600}
+  .m-list .rt .cb{font-family:var(--num);font-size:9.5px;color:var(--jade);font-weight:600}
+
+  .m-menu .mi{display:flex;align-items:center;gap:8px;padding:9px 4px;font-size:12px;font-weight:600;border-bottom:1px solid var(--line-soft)}
+  .rate-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+  .rate-row span:first-child{flex:1;font-size:11px}
+  .m-mini{width:34px;text-align:center;font-family:var(--num);font-weight:700;font-size:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 0}
+  .m-mini.b{border-color:rgba(191,142,60,.5);background:#fdf8ef;color:var(--gold)}
+
+  .glow{position:relative}
+  .glow::after{content:"";position:absolute;inset:-4px;border:2px solid var(--gold);border-radius:12px;animation:pulse 1.3s ease-in-out infinite;pointer-events:none}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+  .welcome .wlogo{width:60px;height:60px;border-radius:17px;background:linear-gradient(135deg,var(--jade),var(--jade-deep));display:grid;place-items:center;color:#fff;font-size:30px;margin:0 auto 16px;box-shadow:0 10px 24px rgba(17,80,60,.35)}
+  .welcome h2{font-size:20px;font-weight:900}
+  .welcome p{font-size:12.5px;color:var(--ink-soft);margin-top:8px}
+
+  /* caption + controls */
+  .caption{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 17px;width:100%;max-width:340px;box-shadow:0 4px 16px rgba(30,34,44,.06)}
+  .caption .step{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .caption .badge{font-family:var(--num);font-size:11px;font-weight:700;color:#fff;background:var(--jade);padding:2px 9px;border-radius:99px}
+  .caption h3{font-size:15px;font-weight:900}
+  .caption p{font-size:13px;color:var(--ink-soft);line-height:1.65}
+
+  .controls{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:4px}
+  .ctrl{width:44px;height:44px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:17px;color:var(--ink);transition:.15s;box-shadow:0 2px 6px rgba(30,34,44,.06)}
+  .ctrl:hover{background:var(--surface-2)}
+  .ctrl.play{width:58px;height:58px;background:var(--jade);color:#fff;font-size:22px;box-shadow:0 6px 18px rgba(31,122,92,.35)}
+  .ctrl.play:hover{background:var(--jade-deep)}
+  .ctrl:disabled{opacity:.35;cursor:default}
+  .ctrl.on{background:var(--jade-soft);border-color:var(--jade);color:var(--jade-deep)}
+
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .dot{width:8px;height:8px;border-radius:99px;background:var(--line);cursor:pointer;transition:.2s}
+  .dot.on{background:var(--jade);width:22px}
+  .foot{text-align:center;font-size:11px;color:var(--ink-faint);margin-top:14px;line-height:1.6}
+  .note{font-size:11px;color:var(--gold);text-align:center;margin-top:8px;font-weight:600;min-height:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">◈</div>
+    <div><h1>回饋帳本 · 使用教學</h1><p>按 ▶ 播放,會自動翻頁並語音導覽</p></div>
+  </header>
+
+  <div class="stage">
+    <div class="phone"><div class="screen" id="screen"></div></div>
+    <div class="caption">
+      <div class="step"><span class="badge" id="badge">1 / 12</span><h3 id="cTitle">標題</h3></div>
+      <p id="cText">內容</p>
+    </div>
+    <div class="controls">
+      <button class="ctrl" id="prevBtn" title="上一步">◀</button>
+      <button class="ctrl play" id="playBtn" title="播放 / 暫停">▶</button>
+      <button class="ctrl" id="nextBtn" title="下一步">▶</button>
+      <button class="ctrl" id="replayBtn" title="重播語音">↺</button>
+      <button class="ctrl" id="muteBtn" title="靜音">🔊</button>
+    </div>
+    <div class="note" id="note"></div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="foot">語音由裝置內建朗讀功能播放。若沒聲音,請開啟手機音量與靜音鍵,或改用 Chrome / Safari。</div>
+</div>
+
+<script>
+/* ---------- 教學步驟 ---------- */
+const AV='陳';
+const steps=[
+  { t:'歡迎使用回饋帳本',
+    c:'歡迎使用回饋帳本。這是一個幫你記錄刷卡和現金消費、自動計算回饋，還能跨裝置雲端同步的記帳工具。接下來用幾個步驟，帶你快速上手。',
+    v:`<div class="screen center welcome fade"><div class="wlogo">◈</div><h2>回饋帳本</h2><p>記帳 · 算回饋 · 雲端同步</p></div>` },
+
+  { t:'第一步:登入',
+    c:'打開網址後會看到登入畫面。輸入你的帳號和密碼登入。第一次使用的人，點下方的「還沒有帳號、點此註冊」建立一個。',
+    v:`<div class="screen center fade"><div class="wlogo" style="width:48px;height:48px;font-size:24px;border-radius:14px">◈</div><h2 style="font-size:16px;font-weight:900;margin-bottom:14px">登入雲端帳號</h2>
+       <div class="m-field" style="width:180px"><span class="ph">帳號</span></div>
+       <div class="m-field" style="width:180px"><span class="ph">密碼</span></div>
+       <div class="m-btn glow" style="width:180px">登入</div>
+       <p style="font-size:11px;color:var(--jade);margin-top:12px;font-weight:700">還沒有帳號?點此註冊</p></div>` },
+
+  { t:'記帳從這裡開始',
+    c:'登入後會直接停在「消費記錄」這一頁。這就是你平常記帳的地方。上面四個分頁分別是：消費記錄、總覽、我的卡片、還有速查表。',
+    v:screen('records', panelForm('','')) },
+
+  { t:'填日期和金額',
+    c:'記一筆消費，先選好日期，再輸入這筆花了多少錢。金額直接打數字就可以。',
+    v:screen('records', panelForm('date','amount')) },
+
+  { t:'選卡片,或選現金',
+    c:'接著選你用了哪一張信用卡。如果這筆是付現金，就選「現金」；選現金時，下面的消費類別會自動隱藏，不用再選。',
+    v:screen('records', panelForm('card','')) },
+
+  { t:'選通路,達標就打勾',
+    c:'選這筆消費屬於哪個通路，例如日本、LINE Pay。如果這張卡在這個通路有達標加碼，把「已達標加碼」打勾，系統就會用比較高的趴數。下方會即時顯示這筆預估能拿多少回饋。',
+    v:screen('records', panelForm('cat','bonus')) },
+
+  { t:'按下新增',
+    c:'確認金額和回饋沒問題，按「新增這筆消費」，這筆就記好了，回饋會自動算進去。是不是很快?',
+    v:screen('records', panelForm('','add')) },
+
+  { t:'總覽:看你賺了多少',
+    c:'切到「總覽」，最上面的大數字就是你累積拿到的回饋金額，還有有效回饋率。下面可以看到這個月刷卡和現金各花了多少，以及每張卡的消費佔比。',
+    v:screen('overview', overviewMock()) },
+
+  { t:'速查表:刷哪張最賺',
+    c:'不確定某個通路該刷哪張卡?打開「速查表」，每個通路回饋最高的卡會標上皇冠、用綠色底標出來，一眼就知道刷哪張最划算。',
+    v:screen('quick', quickMock()) },
+
+  { t:'我的卡片:設定與排序',
+    c:'在「我的卡片」可以點任一張卡，設定它各通路的回饋趴數、每月上限、達標上限。想調整順序，電腦可以直接拖曳卡片，手機用卡片左上角的左右箭頭移動。',
+    v:screen('cards', cardsMock()) },
+
+  { t:'新增自己的卡片',
+    c:'範例卡片裡沒有你的卡?沒問題。在「我的卡片」最下面按「加號、新增卡片」，填上卡片名稱，再到各通路欄位自己輸入回饋趴數，一般趴數和達標趴數可以分開填。設定好按儲存，這張卡就會加進你的清單，記帳時就能選它。',
+    v:screen('cards', addCardMock()) },
+
+  { t:'帳號與雲端同步',
+    c:'點右上角的頭像，可以切換使用者、變更密碼，或用「從範本更新我的卡片」一鍵套用最新的卡片設定。你的資料會自動同步到雲端，換手機登入也看得到。',
+    v:screen('records', accountMock()) },
+
+  { t:'開始記帳吧!',
+    c:'以上就是基本操作。平常消費完，花十秒鐘記一筆，月底就能清楚看到自己靠刷卡賺回多少。開始記你的第一筆吧!',
+    v:`<div class="screen center welcome fade"><div class="wlogo">✓</div><h2>準備好了</h2><p>現在就記下你的第一筆消費</p></div>` },
+];
+
+/* ---------- 畫面模板 ---------- */
+function screen(tab, body){
+  const tabs=[['records','消費記錄'],['overview','總覽'],['cards','我的卡片'],['quick','速查表']];
+  return `<div class="screen fade">
+    <div class="m-top"><div class="m-logo">◈</div><b>回饋帳本</b><span class="sp"></span><div class="m-av">${AV}</div></div>
+    <div class="m-tabs">${tabs.map(([k,n])=>`<span class="${k===tab?'on':''}">${n}</span>`).join('')}</div>
+    ${body}</div>`;
+}
+function panelForm(hl, hl2){
+  const g=k=>((k===hl||k===hl2)?'glow':'');
+  return `<div class="m-panel">
+    <div class="m-lbl">日期 / 金額</div>
+    <div class="m-field ${g('date')}"><span class="v m-num">2026-06-12</span></div>
+    <div class="m-field ${g('amount')}"><span class="ph">金額</span><span class="v m-num">${hl2==='add'||hl==='cat'||hl==='card'?'1,280':'0'}</span></div>
+    <div class="m-lbl">使用卡片</div>
+    <div class="m-field ${g('card')}"><span class="v">${hl==='card'?'💵 現金':'玉山 熊本熊卡'}</span><span class="ph">▾</span></div>
+    ${hl==='card'?'':`<div class="m-lbl">消費類別</div><div class="m-field ${g('cat')}"><span class="v">🇯🇵 日本</span><span class="ph">▾</span></div>`}
+    ${(hl==='bonus')?`<div class="m-chk"><span class="box">✓</span> 已達標加碼 <span style="opacity:.6;font-weight:500">(2.5% → 8.5%)</span></div>`:''}
+    <div class="m-prev"><span class="k">預估回饋 · ${hl==='card'?'現金':(hl==='bonus'?'8.5%':'2.5%')}</span><span class="a">${hl==='card'?'$0':(hl==='bonus'?'+$108':'+$32')}</span></div>
+    <div class="m-btn ${g('add')}">＋ 新增這筆消費</div>
+  </div>`;
+}
+function overviewMock(){
+  return `<div class="m-hero"><div class="k">累積回饋金額</div><div class="big"><small>NT$</small>1,284</div><div class="pill">📈 有效回饋率 4.6%</div></div>
+    <div class="m-panel"><div class="m-lbl">本期消費(刷卡 / 現金)</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700"><span>💳 $24,600</span><span>💵 $3,200</span></div>
+      <div class="m-split"><i class="c" style="width:88%"></i><i class="h" style="width:12%"></i></div>
+      <div class="m-splitrow"><span>刷卡</span><span>現金</span></div>
+    </div>`;
+}
+function quickMock(){
+  return `<div class="m-panel"><div class="m-lbl">刷哪張卡最賺 · 速查表</div>
+    <table class="m-qt"><tr><th>通路</th><th>熊本熊</th><th>富邦J</th><th>中信</th></tr>
+    <tr><td class="first">🇯🇵 日本</td><td class="best">8.5%♔</td><td>3%</td><td>5%</td></tr>
+    <tr><td class="first">🇰🇷 韓國</td><td>1%</td><td>3%</td><td class="best">5%♔</td></tr>
+    <tr><td class="first">💚 LINE Pay</td><td>1%</td><td>1%</td><td class="best">5%♔</td></tr></table></div>`;
+}
+function cardsMock(){
+  return `<div class="m-card" style="background:linear-gradient(135deg,#b0883a,#6b4f1c)"><div class="mv"><b>◀</b><b>▶</b></div><div class="cr">1%</div><div class="cn">玉山 熊本熊卡</div><div style="font-size:9px;opacity:.85;margin-top:3px">🇯🇵 日本 8.5%</div></div>
+    <div class="m-card" style="background:linear-gradient(135deg,#2b3350,#11162a)"><div class="mv"><b>◀</b><b>▶</b></div><div class="cr">1%</div><div class="cn">富邦 J 卡</div><div style="font-size:9px;opacity:.85;margin-top:3px">🇯🇵🇰🇷🇹🇭 3%</div></div>`;
+}
+function accountMock(){
+  return `<div class="m-panel m-menu" style="margin-top:30px">
+    <div style="display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:6px"><div class="m-av" style="width:34px;height:34px;font-size:14px">${AV}</div><div><b style="font-size:13px">${AV}</b><div style="font-size:9.5px;color:var(--ink-soft)">☁️ 雲端帳號 · 已同步</div></div></div>
+    <div class="mi">🚪 登出</div><div class="mi">🗂️ 從範本更新我的卡片</div><div class="mi">🔒 變更雲端密碼</div></div>`;
+}
+function addCardMock(){
+  return `<div class="m-panel" style="padding:12px">
+    <div style="font-size:13px;font-weight:900;margin-bottom:10px">新增卡片</div>
+    <div class="m-lbl">卡片名稱</div>
+    <div class="m-field glow"><span class="v">台新 GoGo 卡</span></div>
+    <div class="m-lbl">各通路回饋 % · 一般 / 達標</div>
+    <div class="rate-row"><span>💚 LINE Pay</span><span class="m-mini">3</span><span class="m-mini b">5</span></div>
+    <div class="rate-row"><span>🛍️ momo</span><span class="m-mini">2</span><span class="m-mini b">—</span></div>
+    <div class="rate-row" style="margin-bottom:10px"><span>🇯🇵 日本</span><span class="m-mini">—</span><span class="m-mini b">—</span></div>
+    <div class="m-btn glow">儲存卡片</div>
+  </div>`;
+}
+
+/* ---------- 播放邏輯 ---------- */
+const synth=window.speechSynthesis;
+let voice=null, idx=0, playing=false, muted=false, timer=null;
+
+function pickVoice(){
+  if(!synth)return;
+  const vs=synth.getVoices();
+  voice=vs.find(v=>/zh[-_]TW/i.test(v.lang))||vs.find(v=>/zh[-_]HK/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang))||vs.find(v=>/Chinese|中文|國語|普通/i.test(v.name))||null;
+}
+if(synth){ pickVoice(); synth.onvoiceschanged=pickVoice; }
+
+const $=id=>document.getElementById(id);
+
+function render(){
+  const s=steps[idx];
+  $('screen').innerHTML=s.v;
+  $('cTitle').textContent=s.t;
+  $('cText').textContent=s.c;
+  $('badge').textContent=(idx+1)+' / '+steps.length;
+  $('prevBtn').disabled=idx===0;
+  $('nextBtn').disabled=idx===steps.length-1;
+  $('dots').innerHTML=steps.map((_,i)=>`<span class="dot ${i===idx?'on':''}" data-i="${i}"></span>`).join('');
+  $('dots').querySelectorAll('.dot').forEach(d=>d.onclick=()=>go(+d.dataset.i));
+  $('note').textContent = (!synth) ? '此瀏覽器不支援語音朗讀,可用按鈕手動翻頁' : '';
+}
+function clearTimer(){ if(timer){clearTimeout(timer);timer=null;} }
+function estMs(t){ return Math.max(2600, t.length*180 + 800); }
+
+function narrate(){
+  clearTimer();
+  if(muted || !synth){ if(playing){ timer=setTimeout(auto, estMs(steps[idx].c)); } return; }
+  try{ synth.cancel(); }catch(e){}
+  setTimeout(()=>{
+    const u=new SpeechSynthesisUtterance(steps[idx].c);
+    u.lang='zh-TW'; if(voice)u.voice=voice; u.rate=1; u.pitch=1;
+    u.onend=()=>{ if(playing) auto(); };
+    try{ synth.speak(u); }catch(e){ if(playing){ timer=setTimeout(auto, estMs(steps[idx].c)); } }
+  }, 70);
+}
+function auto(){ if(idx<steps.length-1){ idx++; render(); narrate(); } else { stop(); } }
+function go(i){ i=Math.max(0,Math.min(steps.length-1,i)); idx=i; render(); if(synth)try{synth.cancel()}catch(e){}; clearTimer(); if(playing) narrate(); }
+
+function play(){ playing=true; $('playBtn').textContent='❚❚'; if(idx===steps.length-1) idx=0; render(); narrate(); }
+function stop(){ playing=false; $('playBtn').textContent='▶'; if(synth)try{synth.cancel()}catch(e){}; clearTimer(); }
+
+$('playBtn').onclick=()=>{ playing?stop():play(); };
+$('prevBtn').onclick=()=>go(idx-1);
+$('nextBtn').onclick=()=>go(idx+1);
+$('replayBtn').onclick=()=>{ if(synth){try{synth.cancel()}catch(e){} muted=false;syncMute(); const u=new SpeechSynthesisUtterance(steps[idx].c); u.lang='zh-TW'; if(voice)u.voice=voice; u.onend=()=>{if(playing)auto();}; setTimeout(()=>synth.speak(u),70);} };
+$('muteBtn').onclick=()=>{ muted=!muted; syncMute(); if(muted){ if(synth)try{synth.cancel()}catch(e){} } else if(playing){ narrate(); } };
+function syncMute(){ $('muteBtn').textContent=muted?'🔇':'🔊'; $('muteBtn').classList.toggle('on',muted); }
+
+render();
+</script>
+</body>
+</html>
