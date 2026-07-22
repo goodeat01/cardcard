@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回饋帳本 · 信用卡刷卡回饋記錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#ECE8DF;
+    --paper-2:#E4DFD4;
+    --surface:#FBFAF6;
+    --surface-2:#F4F1EA;
+    --ink:#1E222C;
+    --ink-soft:#6A6F7E;
+    --ink-faint:#9A9EAA;
+    --jade:#1F7A5C;
+    --jade-deep:#11503C;
+    --jade-soft:#E2EFE9;
+    --gold:#BB8E3C;
+    --rose:#C0604A;
+    --line:rgba(30,34,44,.10);
+    --line-soft:rgba(30,34,44,.06);
+    --shadow:0 1px 2px rgba(30,34,44,.05), 0 8px 24px rgba(30,34,44,.06);
+    --shadow-lg:0 12px 40px rgba(17,80,60,.18);
+    --r:16px;
+    --r-sm:11px;
+    --num:'Space Grotesk',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Noto Sans TC',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.5;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:var(--num);font-feature-settings:"tnum" 1;letter-spacing:-.01em}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select{font-family:inherit;color:inherit}
+  ::selection{background:var(--jade);color:#fff}
+
+  /* ---------- layout shell ---------- */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 18px 90px}
+
+  .topbar{
+    position:sticky;top:0;z-index:40;
+    background:rgba(236,232,223,.82);
+    backdrop-filter:saturate(1.4) blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-in{max-width:1080px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:14px}
+  .brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .brand .mark{
+    width:34px;height:34px;border-radius:9px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--jade),var(--jade-deep));
+    display:grid;place-items:center;color:#fff;font-size:18px;
+    box-shadow:0 4px 10px rgba(17,80,60,.3);
+  }
+  .brand h1{font-size:17px;font-weight:900;letter-spacing:-.01em;white-space:nowrap}
+  .brand span{display:block;font-size:11px;font-weight:500;color:var(--ink-soft);letter-spacing:.02em}
+  .topbar .spacer{flex:1}
+  .month-pick{
+    display:flex;align-items:center;gap:7px;background:var(--surface);
+    border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 14px;
+  }
+  .month-pick label{font-size:11px;color:var(--ink-soft);font-weight:500}
+  .month-pick select{border:none;background:none;font-size:13px;font-weight:700;outline:none;cursor:pointer;color:var(--ink)}
+  .icon-btn{
+    width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+    background:var(--surface);display:grid;place-items:center;font-size:16px;color:var(--ink-soft);
+    transition:.16s;
+  }
+  .icon-btn:hover{background:var(--surface-2);color:var(--ink)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    margin-top:18px;border-radius:22px;overflow:hidden;position:relative;
+    background:radial-gradient(120% 140% at 85% 0%, #2a8d6c 0%, var(--jade) 38%, var(--jade-deep) 100%);
+    color:#fff;box-shadow:var(--shadow-lg);
+    padding:26px 26px 24px;
+  }
+  .hero::after{
+    content:"";position:absolute;right:-40px;top:-60px;width:280px;height:280px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.14),transparent 62%);pointer-events:none;
+  }
+  .hero .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.8;font-weight:600}
+  .hero .big{font-family:var(--num);font-size:clamp(40px,9vw,62px);font-weight:600;line-height:1;margin:8px 0 2px;letter-spacing:-.02em}
+  .hero .big small{font-size:.42em;font-weight:500;opacity:.8;margin-right:4px}
+  .hero .sub{display:flex;flex-wrap:wrap;gap:18px 28px;margin-top:18px}
+  .hero .sub .item .k{font-size:11.5px;opacity:.78;font-weight:500;letter-spacing:.02em}
+  .hero .sub .item .v{font-family:var(--num);font-size:21px;font-weight:600;margin-top:1px}
+  .hero .sub .item .v small{font-size:.6em;opacity:.85;font-weight:500}
+  .pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.16);padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:4px;margin:18px 0;position:sticky;top:62px;z-index:30}
+  .tabs button{
+    flex:1;padding:9px 6px;border-radius:9px;font-size:13.5px;font-weight:700;color:var(--ink-soft);
+    transition:.16s;white-space:nowrap;
+  }
+  .tabs button.on{background:var(--surface);color:var(--jade-deep);box-shadow:var(--shadow)}
+  .tab-page{display:none;animation:rise .3s ease}
+  .tab-page.on{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- panel ---------- */
+  .grid{display:grid;gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+  .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  .panel-h h2{font-size:15px;font-weight:900;letter-spacing:-.01em}
+  .panel-h .hint{font-size:11.5px;color:var(--ink-faint)}
+
+  /* KPI row */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 14px 13px;box-shadow:var(--shadow)}
+  .kpi .k{font-size:11.5px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;gap:5px}
+  .kpi .v{font-family:var(--num);font-size:26px;font-weight:600;margin-top:5px;letter-spacing:-.02em}
+  .kpi .v small{font-size:.5em;color:var(--ink-faint);font-weight:500;margin-right:2px}
+  .kpi.accent .v{color:var(--jade)}
+
+  /* card / cash split */
+  .split-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .split-item{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 13px}
+  .split-item .k{font-size:11.5px;color:var(--ink-soft);font-weight:600}
+  .split-item .v{font-family:var(--num);font-size:21px;font-weight:600;margin-top:4px;letter-spacing:-.02em}
+  .split-item .v small{font-size:.5em;color:var(--ink-faint);font-weight:500;margin-right:2px}
+  .split-item.total{background:var(--jade-soft);border-color:rgba(31,122,92,.28)}
+  .split-item.total .v{color:var(--jade-deep)}
+  .split-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;margin-top:14px;background:var(--surface-2)}
+  .split-seg{height:100%;transition:width .4s}
+  .split-seg.card{background:var(--jade)}
+  .split-seg.cash{background:#6f8f7d}
+
+  /* 達標 cap tracking */
+  .bcap-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--line-soft)}
+  .bcap-row:last-child{border-bottom:none}
+  .bcap-main{flex:1;min-width:0}
+  .bcap-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .bcap-nm{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bcap-num{font-family:var(--num);font-size:13px;font-weight:600;color:var(--ink-soft);flex-shrink:0}
+  .bcap-track{height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:6px 0 4px}
+  .bcap-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#d8b25e,var(--gold));transition:width .4s}
+  .bcap-fill.full{background:linear-gradient(90deg,#e59b6f,var(--rose))}
+  .bcap-foot{font-size:11px;color:var(--ink-soft)}
+  .bcap-full{color:var(--rose);font-weight:700}
+
+  /* ranking / recommender */
+  .cat-chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .cat-chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex-shrink:0;padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);transition:.15s;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--jade)}
+  .chip.on{background:var(--jade);color:#fff;border-color:var(--jade)}
+  .rank-list{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+  .rank-row{display:flex;align-items:center;gap:13px;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);transition:.18s}
+  .rank-row.top{background:linear-gradient(100deg,var(--jade-soft),var(--surface));border-color:rgba(31,122,92,.4);box-shadow:0 4px 16px rgba(31,122,92,.13)}
+  .rank-pos{font-family:var(--num);font-weight:700;font-size:15px;color:var(--ink-faint);width:22px;text-align:center;flex-shrink:0}
+  .rank-row.top .rank-pos{color:var(--jade)}
+  .cardchip{
+    width:46px;height:30px;border-radius:6px;flex-shrink:0;position:relative;overflow:hidden;
+    box-shadow:0 2px 5px rgba(0,0,0,.18);
+  }
+  .cardchip::before{content:"";position:absolute;left:5px;top:9px;width:9px;height:7px;border-radius:2px;background:rgba(255,255,255,.55)}
+  .rank-name{flex:1;min-width:0}
+  .rank-name .nm{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rank-name .meta{font-size:11px;color:var(--ink-soft)}
+  .rank-rate{text-align:right;flex-shrink:0}
+  .rank-rate .pct{font-family:var(--num);font-size:20px;font-weight:700;line-height:1}
+  .rank-row.top .rank-rate .pct{color:var(--jade)}
+  .rank-rate .est{font-size:11px;color:var(--ink-soft);font-family:var(--num)}
+  .winner-tag{font-size:10px;font-weight:700;color:#fff;background:var(--jade);padding:2px 7px;border-radius:999px;margin-left:6px}
+
+  /* charts */
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .chart-box{position:relative;height:230px}
+  .empty{padding:34px 16px;text-align:center;color:var(--ink-faint);font-size:13px}
+  .empty .em{font-size:30px;display:block;margin-bottom:8px;opacity:.6}
+
+  /* form */
+  .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:11.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.01em}
+  .field input,.field select{
+    border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:10px 12px;
+    font-size:14.5px;outline:none;transition:.15s;width:100%;
+  }
+  .field input:focus,.field select:focus{border-color:var(--jade);background:var(--surface);box-shadow:0 0 0 3px rgba(31,122,92,.12)}
+  .field input.num{font-family:var(--num);font-weight:600}
+  .preview{
+    grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--jade-soft);border:1px dashed rgba(31,122,92,.45);border-radius:12px;padding:12px 15px;
+  }
+  .preview .lbl{font-size:12.5px;color:var(--jade-deep);font-weight:600}
+  .preview .amt{font-family:var(--num);font-size:24px;font-weight:700;color:var(--jade-deep)}
+  .preview .amt small{font-size:.55em;opacity:.7;font-weight:500;margin-left:3px}
+  .btn{
+    border-radius:11px;padding:11px 18px;font-size:14px;font-weight:700;transition:.16s;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .btn-primary{background:var(--jade);color:#fff;box-shadow:0 4px 12px rgba(31,122,92,.28)}
+  .btn-primary:hover{background:var(--jade-deep)}
+  .btn-ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--paper-2)}
+  .btn-danger{background:none;color:var(--rose);border:1px solid rgba(192,96,74,.35)}
+  .btn-danger:hover{background:rgba(192,96,74,.08)}
+  .btn-block{width:100%}
+
+  /* record list */
+  .rec-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .rec-toolbar select{flex:1;min-width:120px;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 11px;font-size:13.5px;font-weight:500;outline:none}
+  .rec{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid var(--line-soft)}
+  .rec:last-child{border-bottom:none}
+  .rec-ico{width:40px;height:40px;border-radius:11px;background:var(--surface-2);display:grid;place-items:center;font-size:19px;flex-shrink:0}
+  .rec-mid{flex:1;min-width:0}
+  .rec-mid .t{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rec-mid .s{font-size:11.5px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+  .rec-right{text-align:right;flex-shrink:0}
+  .rec-right .amt{font-family:var(--num);font-size:15.5px;font-weight:600}
+  .rec-right .cb{font-family:var(--num);font-size:12px;font-weight:600;color:var(--jade);margin-top:1px}
+  .rec-del{opacity:0;width:30px;height:30px;border-radius:8px;color:var(--ink-faint);font-size:15px;transition:.15s;flex-shrink:0}
+  .rec:hover .rec-del{opacity:1}
+  .rec-del:hover{background:rgba(192,96,74,.1);color:var(--rose)}
+  @media(hover:none){.rec-del{opacity:.5}}
+
+  /* card management */
+  .card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .credit{
+    border-radius:16px;padding:16px 17px;color:#fff;position:relative;overflow:hidden;min-height:140px;
+    display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(0,0,0,.16);cursor:pointer;transition:.2s;
+  }
+  .credit:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.22)}
+  .credit.dragging{opacity:.45}
+  .credit.over{outline:2px dashed rgba(255,255,255,.75);outline-offset:-4px}
+  .c-move{position:absolute;top:9px;left:9px;z-index:3;display:flex;gap:5px;opacity:0;transition:.15s}
+  .credit:hover .c-move{opacity:1}
+  .cmv-btn{width:27px;height:24px;border-radius:6px;background:rgba(0,0,0,.32);color:#fff;font-size:11px;border:none;cursor:pointer;backdrop-filter:blur(2px)}
+  .cmv-btn:hover:not(:disabled){background:rgba(0,0,0,.5)}
+  .cmv-btn:disabled{opacity:.3;cursor:default}
+  @media(hover:none){.c-move{opacity:.9}}
+  .credit::after{content:"";position:absolute;right:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .credit .c-top{display:flex;justify-content:space-between;align-items:flex-start}
+  .credit .c-emv{width:32px;height:24px;border-radius:5px;background:linear-gradient(135deg,#f6e2a8,#cda94f);position:relative}
+  .credit .c-emv::after{content:"";position:absolute;inset:5px 7px;border:1px solid rgba(120,90,20,.4);border-radius:2px}
+  .credit .c-rate{text-align:right}
+  .credit .c-rate .p{font-family:var(--num);font-size:24px;font-weight:700;line-height:1}
+  .credit .c-rate .l{font-size:10px;opacity:.8;font-weight:500}
+  .credit .c-name{font-size:16px;font-weight:700;margin-top:auto}
+  .credit .c-meta{font-size:11px;opacity:.82;margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 8px}
+  .credit .c-badge{position:relative;z-index:1;display:inline-block;background:rgba(0,0,0,.18);padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600}
+  .add-card{
+    border:2px dashed var(--line);border-radius:16px;min-height:140px;display:grid;place-items:center;
+    color:var(--ink-soft);font-weight:700;font-size:14px;transition:.18s;background:var(--surface)
+  }
+  .add-card:hover{border-color:var(--jade);color:var(--jade);background:var(--jade-soft)}
+  .add-card .plus{font-size:26px;display:block;margin-bottom:4px}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(20,24,32,.5);backdrop-filter:blur(3px);z-index:60;display:none;align-items:flex-end;justify-content:center;padding:0}
+  .overlay.on{display:flex}
+  .sheet{background:var(--surface);width:100%;max-width:560px;border-radius:22px 22px 0 0;max-height:92vh;overflow-y:auto;animation:slideup .3s cubic-bezier(.2,.8,.2,1)}
+  @keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet-h{position:sticky;top:0;background:var(--surface);padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;z-index:2}
+  .sheet-h h3{font-size:17px;font-weight:900}
+  .sheet-b{padding:18px 20px 24px}
+  .swatches{display:flex;gap:9px;flex-wrap:wrap}
+  .sw{width:38px;height:38px;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:.15s}
+  .sw.on{border-color:var(--ink);transform:scale(1.06)}
+  .cat-rates{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:6px}
+  .cat-rate{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+  .cat-rate .nm{font-size:12.5px;flex:1;min-width:0;display:flex;align-items:center;gap:5px}
+  .cat-rate input{width:52px;flex-shrink:0;border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-family:var(--num);font-weight:600;font-size:13px;text-align:right;background:var(--surface);outline:none}
+  .cat-rate input.r-bonus{border-color:rgba(191,142,60,.5);background:#fdf8ef}
+  .cat-rate input:focus{border-color:var(--jade)}
+  .cat-rate.head{background:none;border:none;padding:0 10px;gap:6px}
+  .cat-rate.head .pch{width:52px;flex-shrink:0;text-align:center;font-size:10.5px;color:var(--ink-soft);font-weight:600}
+  .cat-rate .pc{font-size:12px;color:var(--ink-soft)}
+  .mini-link{font-size:11px;font-weight:700;color:var(--jade);background:var(--jade-soft);padding:2px 8px;border-radius:6px;margin-left:6px;border:none;cursor:pointer}
+  .mini-link:hover{background:#d3e8df}
+  .cat-row{display:flex;align-items:center;gap:9px;padding:11px 4px;border-bottom:1px solid var(--line-soft)}
+  .cat-row.dragging{opacity:.45}
+  .cat-row.over{background:var(--jade-soft);border-radius:8px}
+  .cat-row .grip{cursor:grab;color:var(--ink-faint);font-size:13px;flex-shrink:0;letter-spacing:-2px}
+  .cat-row .ci{font-size:19px;width:26px;text-align:center;flex-shrink:0}
+  .cat-row .cn{flex:1;font-weight:600;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .cat-row .cmv{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:11px;flex-shrink:0;cursor:pointer}
+  .cat-row .cmv:hover:not(:disabled){background:var(--surface-2);color:var(--ink)}
+  .cat-row .cmv:disabled{opacity:.3;cursor:default}
+  .cat-row .cx{width:30px;height:30px;border-radius:8px;color:var(--ink-faint);font-size:15px;flex-shrink:0;border:none;background:none;cursor:pointer}
+  .cat-row .cx:hover{background:rgba(192,96,74,.1);color:var(--rose)}
+  #cNote{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;resize:vertical;width:100%}
+  #cNote:focus{border-color:var(--jade);background:var(--surface);box-shadow:0 0 0 3px rgba(31,122,92,.12)}
+  .credit .c-note{position:relative;z-index:1;font-size:11px;opacity:.9;margin-top:8px;line-height:1.5;white-space:pre-wrap;background:rgba(0,0,0,.15);padding:6px 9px;border-radius:8px}
+  .bonus-toggle{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--jade-deep);background:var(--jade-soft);border:1px solid rgba(31,122,92,.28);border-radius:11px;padding:11px 13px;cursor:pointer}
+  .bonus-toggle input{width:18px;height:18px;accent-color:var(--jade)}
+  .bonus-hint{color:var(--ink-soft);font-weight:500;font-family:var(--num)}
+  .bonus-tag{display:inline-block;font-size:9.5px;font-weight:700;color:#fff;background:var(--gold);padding:1px 6px;border-radius:6px;margin-left:5px}
+  .qt-bonus{display:block;font-size:10px;color:var(--gold);font-weight:600;margin-top:1px}
+  .qt td.best .qt-bonus{color:rgba(255,255,255,.9)}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:80;opacity:0;transition:.25s;box-shadow:0 10px 30px rgba(0,0,0,.3);pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .seed-banner{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:var(--ink-soft)}
+  .seed-banner b{color:var(--ink)}
+  .seed-banner button{margin-left:auto;font-size:12px;font-weight:700;color:var(--jade);white-space:nowrap}
+
+  /* cap progress bar on credit card */
+  .cap-wrap{position:relative;z-index:1;margin-top:9px}
+  .cap-head{display:flex;justify-content:space-between;font-size:10.5px;opacity:.9;margin-bottom:4px;font-weight:500}
+  .cap-head .num{font-family:var(--num);font-weight:600}
+  .cap-track{height:5px;border-radius:99px;background:rgba(0,0,0,.28);overflow:hidden}
+  .cap-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#ffe39c,#ffd166);transition:width .4s}
+  .cap-fill.full{background:linear-gradient(90deg,#ffcaa8,#ff9b6b)}
+  .cap-fill.bonus{background:linear-gradient(90deg,#b8e0cf,#6fd0a8)}
+  .cap-fill.bonus.full{background:linear-gradient(90deg,#ffcaa8,#ff9b6b)}
+
+  /* capped badge in record list */
+  .cap-tag{display:inline-block;font-size:9.5px;font-weight:700;color:var(--rose);background:rgba(192,96,74,.12);padding:1px 6px;border-radius:6px;margin-left:5px}
+  .rec-right .cb .strike{color:var(--ink-faint);text-decoration:line-through;font-weight:500;margin-right:3px}
+
+  /* quick-reference table */
+  .qt-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+  .qt{border-collapse:separate;border-spacing:0;width:100%;min-width:max-content;font-size:13px}
+  .qt th,.qt td{padding:10px 12px;text-align:center;white-space:nowrap}
+  .qt thead th{position:sticky;top:0;background:var(--surface);border-bottom:2px solid var(--line);vertical-align:bottom;font-weight:700}
+  .qt .qt-chip{display:block;width:34px;height:22px;border-radius:5px;margin:0 auto 6px;box-shadow:0 2px 5px rgba(0,0,0,.18)}
+  .qt .qt-cardname{font-size:12px;display:block;max-width:96px;overflow:hidden;text-overflow:ellipsis}
+  .qt .qt-cap{font-size:10px;color:var(--ink-faint);font-weight:500;font-family:var(--num)}
+  .qt .cat-col{position:sticky;left:0;background:var(--surface);text-align:left;font-weight:700;z-index:1;box-shadow:1px 0 0 var(--line)}
+  .qt thead .cat-col{z-index:2}
+  .qt tbody tr:nth-child(even) td{background:var(--surface-2)}
+  .qt tbody tr:nth-child(even) .cat-col{background:#F0ECE3}
+  .qt td{font-family:var(--num);font-weight:600;color:var(--ink-soft);border-bottom:1px solid var(--line-soft)}
+  .qt td.cat-col{font-family:'Noto Sans TC';color:var(--ink)}
+  .qt td.bonus{color:var(--ink)}
+  .qt td.best{background:var(--jade)!important;color:#fff;font-weight:700;border-radius:7px}
+  .qt td.best .crown{font-size:10px;margin-left:2px;opacity:.85}
+  .qt-legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11.5px;color:var(--ink-soft);margin-top:14px}
+  .qt-legend span{display:inline-flex;align-items:center;gap:5px}
+  .qt-key{width:13px;height:13px;border-radius:4px;display:inline-block}
+
+  /* user button in topbar */
+  .user-btn{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 4px;transition:.15s}
+  .user-btn:hover{background:var(--surface-2)}
+  .user-av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+  .user-av.big{width:48px;height:48px;font-size:20px;border-radius:14px}
+  .user-nm{font-size:13px;font-weight:700;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* auth / login screen */
+  .auth{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 120% at 80% 0%, #2a8d6c, var(--jade) 42%, var(--jade-deep));}
+  .auth.on{display:flex}
+  .auth-card{width:100%;max-width:382px;background:var(--surface);border-radius:24px;padding:30px 26px;box-shadow:0 30px 70px rgba(0,0,0,.35);text-align:center;animation:rise .35s ease;max-height:92vh;overflow-y:auto}
+  .auth-logo{width:54px;height:54px;border-radius:15px;margin:0 auto 14px;background:linear-gradient(135deg,var(--jade),var(--jade-deep));display:grid;place-items:center;color:#fff;font-size:26px;box-shadow:0 8px 20px rgba(17,80,60,.35)}
+  .auth-card h2{font-size:21px;font-weight:900;letter-spacing:-.01em}
+  .auth-sub{font-size:13px;color:var(--ink-soft);margin:3px 0 22px}
+  .user-list{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+  .user-chip{display:flex;align-items:center;gap:11px;padding:10px 13px;border:1px solid var(--line);border-radius:13px;background:var(--surface-2);transition:.15s;text-align:left}
+  .user-chip:hover{border-color:var(--jade);background:var(--jade-soft)}
+  .user-chip-nm{flex:1;font-size:15px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-chip .lock{font-size:13px;opacity:.55}
+  .auth-empty{font-size:13px;color:var(--ink-faint);padding:18px}
+  .auth-add{width:100%;padding:11px;border:1.5px dashed var(--line);border-radius:13px;font-weight:700;color:var(--jade);font-size:14px;transition:.15s}
+  .auth-add:hover{border-color:var(--jade);background:var(--jade-soft)}
+  .auth-new{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+  .auth-new input{border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:11px 13px;font-size:14.5px;outline:none;width:100%}
+  .auth-new input:focus{border-color:var(--jade);background:var(--surface);box-shadow:0 0 0 3px rgba(31,122,92,.12)}
+  .auth-note{font-size:11px;color:var(--ink-faint);line-height:1.65;margin-top:18px}
+  .pin-panel{display:flex;flex-direction:column;align-items:center;gap:13px}
+  .pin-nm{font-size:17px;font-weight:800}
+  .pin-panel input{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:12px;font-size:20px;text-align:center;letter-spacing:.4em;font-family:var(--num);width:100%;outline:none}
+  .pin-panel input:focus{border-color:var(--jade);background:var(--surface)}
+  .pin-err{font-size:12px;color:var(--rose);min-height:15px;font-weight:600}
+
+  /* account sheet */
+  .acct-cur{display:flex;align-items:center;gap:13px;padding:2px 2px 16px;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .acct-nm{font-size:17px;font-weight:800}
+  .acct-meta{font-size:12px;color:var(--ink-soft)}
+  .acct-item{display:block;width:100%;text-align:left;padding:13px 14px;border-radius:12px;font-size:14.5px;font-weight:600;transition:.15s;margin-bottom:3px}
+  .acct-item:hover{background:var(--surface-2)}
+  .acct-item.danger{color:var(--rose)}
+  .acct-item.danger:hover{background:rgba(192,96,74,.08)}
+
+  /* cloud login form + sync indicator */
+  .auth-cloud{display:flex;flex-direction:column;gap:9px;margin-bottom:8px}
+  .auth-cloud input{border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:12px 13px;font-size:14.5px;outline:none;width:100%}
+  .auth-cloud input:focus{border-color:var(--jade);background:var(--surface);box-shadow:0 0 0 3px rgba(31,122,92,.12)}
+  .sync-dot{display:none;align-items:center;gap:5px;font-size:11.5px;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px;color:var(--ink-soft);cursor:pointer;transition:.15s}
+  .sync-dot:hover{background:var(--surface-2)}
+
+  @media(max-width:680px){
+    .wrap{padding:0 13px 90px}
+    .topbar-in{padding:11px 13px;flex-wrap:wrap}
+    .brand span{display:none}
+    .user-nm{display:none}
+    .sync-dot .sync-txt{display:none}
+    .charts{grid-template-columns:1fr}
+    .card-grid{grid-template-columns:1fr}
+    .kpis{grid-template-columns:1fr 1fr}
+    .kpi:first-child{grid-column:1/-1}
+    .form-grid{grid-template-columns:1fr}
+    .cat-rates{grid-template-columns:1fr}
+    .hero{padding:22px 20px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="mark">◈</div>
+      <div><h1>回饋帳本</h1><span>信用卡刷卡回饋記錄</span></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="month-pick">
+      <label>月份</label>
+      <select id="monthSel"></select>
+    </div>
+    <button class="icon-btn" id="exportBtn" title="匯出資料">⤓</button>
+    <button class="icon-btn" id="importBtn" title="匯入資料">⤒</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+    <button class="sync-dot" id="syncDot" title="同步狀態"></button>
+    <button class="user-btn" id="userBtn" title="帳號設定">
+      <span class="user-av" id="userAv"></span>
+      <span class="user-nm" id="userNm"></span>
+      <span style="font-size:10px;opacity:.55">▾</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">累積回饋金額</div>
+    <div class="big"><small>NT$</small><span id="heroCashback" class="num">0</span></div>
+    <span class="pill">📈 有效回饋率 <b id="heroRate" style="font-family:var(--num)">0%</b></span>
+    <div class="sub">
+      <div class="item"><div class="k">總消費金額</div><div class="v"><small>NT$</small><span id="heroSpend">0</span></div></div>
+      <div class="item"><div class="k">消費筆數</div><div class="v"><span id="heroCount">0</span> <small>筆</small></div></div>
+      <div class="item"><div class="k">本期最賺的卡</div><div class="v" id="heroBestCard" style="font-size:16px">—</div></div>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <nav class="tabs">
+    <button class="on" data-tab="records">消費記錄</button>
+    <button data-tab="overview">總覽</button>
+    <button data-tab="cards">我的卡片</button>
+    <button data-tab="quick">速查表</button>
+  </nav>
+
+  <!-- ============ OVERVIEW ============ -->
+  <div class="tab-page" id="tab-overview">
+    <div class="grid">
+
+      <div class="kpis">
+        <div class="kpi accent"><div class="k">💰 回饋總額</div><div class="v"><small>NT$</small><span id="kCashback">0</span></div></div>
+        <div class="kpi"><div class="k">🧾 消費總額</div><div class="v"><small>NT$</small><span id="kSpend">0</span></div></div>
+        <div class="kpi"><div class="k">⚡ 有效回饋率</div><div class="v"><span id="kRate">0</span><small style="margin-left:2px">%</small></div></div>
+      </div>
+
+      <!-- card / cash spending split -->
+      <div class="panel">
+        <div class="panel-h"><h2>本期消費(刷卡 / 現金)</h2><span class="hint" id="splitMonth"></span></div>
+        <div class="split-row">
+          <div class="split-item"><div class="k">💳 刷卡消費</div><div class="v"><small>NT$</small><span id="splitCard">0</span></div></div>
+          <div class="split-item"><div class="k">💵 現金消費</div><div class="v"><small>NT$</small><span id="splitCash">0</span></div></div>
+          <div class="split-item total"><div class="k">合計</div><div class="v"><small>NT$</small><span id="splitTotal">0</span></div></div>
+        </div>
+        <div class="split-bar" id="splitBar"><div class="split-seg card" id="splitBarCard"></div><div class="split-seg cash" id="splitBarCash"></div></div>
+      </div>
+
+      <!-- bonus (達標) cashback vs cap -->
+      <div class="panel">
+        <div class="panel-h"><h2>達標回饋上限追蹤</h2><span class="hint" id="bonusTotal"></span></div>
+        <div id="bonusCapList"></div>
+      </div>
+
+      <!-- ranking -->
+      <div class="panel">
+        <div class="panel-h">
+          <h2>刷哪張卡最賺 · 回饋趴數排行</h2>
+          <span class="hint">選類別看排名</span>
+        </div>
+        <div class="cat-chips" id="rankChips"></div>
+        <div class="rank-list" id="rankList"></div>
+      </div>
+
+      <!-- charts -->
+      <div class="charts">
+        <div class="panel">
+          <div class="panel-h"><h2>各卡消費佔比</h2></div>
+          <div class="chart-box"><canvas id="chartCard"></canvas></div>
+          <div id="chartCardEmpty"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>各類別回饋金額</h2></div>
+          <div class="chart-box"><canvas id="chartCat"></canvas></div>
+          <div id="chartCatEmpty"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ RECORDS ============ -->
+  <div class="tab-page on" id="tab-records">
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-h"><h2>記一筆消費</h2><span class="hint">自動算回饋</span></div>
+        <div class="form-grid">
+          <div class="field"><label>日期</label><input type="date" id="rDate"></div>
+          <div class="field"><label>金額 (NT$)</label><input type="number" id="rAmount" class="num" placeholder="0" inputmode="numeric" min="0"></div>
+          <div class="field"><label>使用卡片</label><select id="rCard"></select></div>
+          <div class="field" id="rCatField"><label>消費類別 <button class="mini-link" id="manageCatsBtn" type="button">＋ 管理通路</button></label><select id="rCat"></select></div>
+          <div class="field full"><label>備註(選填)</label><input type="text" id="rNote" placeholder="例:午餐、Uber、訂閱…"></div>
+          <div class="field full" id="bonusToggleWrap" style="display:none">
+            <label class="bonus-toggle"><input type="checkbox" id="rBonus"> <span>已達標加碼</span> <span class="bonus-hint" id="bonusHint"></span></label>
+          </div>
+          <div class="preview">
+            <div class="lbl">預估回饋 · <span id="prevRate">—</span></div>
+            <div class="amt"><small>NT$</small><span id="prevCashback">0</span></div>
+          </div>
+          <div class="field full"><button class="btn btn-primary btn-block" id="addRecBtn">＋ 新增這筆消費</button></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><h2>消費明細</h2><span class="hint" id="recCount">0 筆</span></div>
+        <div class="rec-toolbar">
+          <select id="filterCard"><option value="">全部卡片</option></select>
+          <select id="filterCat"><option value="">全部類別</option></select>
+        </div>
+        <div id="recList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CARDS ============ -->
+  <div class="tab-page" id="tab-cards">
+    <div class="card-grid" id="cardGrid"></div>
+  </div>
+
+  <!-- ============ QUICK TABLE ============ -->
+  <div class="tab-page" id="tab-quick">
+    <div class="panel">
+      <div class="panel-h">
+        <h2>各卡常用通路速查表</h2>
+        <span class="hint">每個通路該刷哪張</span>
+      </div>
+      <div class="qt-scroll" id="quickTable"></div>
+      <div class="qt-legend">
+        <span><i class="qt-key" style="background:var(--jade)"></i>該通路最高回饋,建議刷這張</span>
+        <span>♔ 同列最高趴數</span>
+        <span><i class="qt-key" style="background:var(--surface-2);border:1px solid var(--line)"></i>套用預設回饋(無加碼)</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CARD MODAL -->
+<div class="overlay" id="cardModal">
+  <div class="sheet">
+    <div class="sheet-h">
+      <h3 id="modalTitle">新增卡片</h3>
+      <button class="icon-btn" id="closeModal" style="border:none;background:var(--surface-2)">✕</button>
+    </div>
+    <div class="sheet-b">
+      <div class="form-grid">
+        <div class="field full"><label>卡片名稱</label><input type="text" id="cName" placeholder="例:玉山 Pi 拍錢包卡"></div>
+        <div class="field"><label>預設回饋 (%)</label><input type="number" id="cRate" class="num" placeholder="1" step="0.1" min="0"></div>
+        <div class="field"><label>每月回饋總上限 (NT$,選填)</label><input type="number" id="cCap" class="num" placeholder="無上限" min="0"></div>
+        <div class="field"><label>達標回饋上限 (NT$,選填)</label><input type="number" id="cBonusCap" class="num" placeholder="無上限" min="0"></div>
+        <div class="field"><label>達標上限週期</label><select id="cBonusPeriod"><option value="month">每月</option><option value="quarter">每季(累計整季)</option></select></div>
+        <div class="field full"><label>卡片顏色</label><div class="swatches" id="swatches"></div></div>
+        <div class="field full"><label>備註(選填,如達標條件、登錄提醒)</label><textarea id="cNote" rows="2" placeholder="例:LINE Pay 需每月登錄;達標=當月一般消費滿 NT$3,000"></textarea></div>
+        <div class="field full">
+          <label>各通路回饋 (%) · 一般 / 達標加碼後總趴數</label>
+          <div class="cat-rates" id="catRates"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn btn-danger" id="delCardBtn" style="display:none">刪除</button>
+        <button class="btn btn-primary btn-block" id="saveCardBtn">儲存卡片</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="overlay" id="catModal">
+  <div class="sheet">
+    <div class="sheet-h">
+      <h3>管理回饋通路</h3>
+      <button class="icon-btn" id="catClose" style="border:none;background:var(--surface-2)">✕</button>
+    </div>
+    <div class="sheet-b">
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px">
+        <div class="field" style="width:66px"><label>圖示</label><input type="text" id="newCatIcon" maxlength="6" placeholder="🏷️" style="text-align:center"></div>
+        <div class="field" style="flex:1"><label>通路名稱</label><input type="text" id="newCatName" maxlength="14" placeholder="例:Google Pay、家樂福"></div>
+        <button class="btn btn-primary" id="addCatBtn" style="height:44px">新增</button>
+      </div>
+      <div id="catList"></div>
+      <p style="font-size:11.5px;color:var(--ink-faint);margin-top:12px;line-height:1.6">新增的通路會出現在記帳類別、卡片回饋設定、速查表與排行。刪除通路不會刪掉已有的消費記錄。</p>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH / LOGIN SCREEN -->
+<div class="auth" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">◈</div>
+    <h2>回饋帳本</h2>
+    <p class="auth-sub" id="authSub">選擇使用者開始記帳</p>
+    <div class="auth-cloud" id="authCloud" style="display:none">
+      <input type="text" id="clUser" placeholder="帳號" maxlength="20" autocomplete="username">
+      <input type="password" id="clPass" placeholder="密碼" autocomplete="current-password">
+      <div class="pin-err" id="clErr"></div>
+      <button class="btn btn-primary btn-block" id="clLogin">登入</button>
+      <button class="auth-add" id="clToReg" style="margin-top:10px">還沒有帳號?點此註冊</button>
+    </div>
+    <div class="user-list" id="userList"></div>
+    <div class="auth-new" id="authNew" style="display:none">
+      <input type="text" id="newName" placeholder="使用者名稱" maxlength="12" autocomplete="off">
+      <input type="tel" id="newPin" placeholder="設定 4 位數密碼(選填)" maxlength="4" inputmode="numeric" autocomplete="off">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" id="newCancel" style="flex:1">取消</button>
+        <button class="btn btn-primary" id="newCreate" style="flex:2">建立使用者</button>
+      </div>
+    </div>
+    <button class="auth-add" id="showNew">＋ 新增使用者</button>
+    <p class="auth-note">資料儲存在這台裝置的瀏覽器,各使用者互相獨立。密碼僅為共用裝置上的輕度區隔,並非雲端帳號或加密保護。</p>
+  </div>
+</div>
+
+<!-- ACCOUNT SHEET -->
+<div class="overlay" id="acctModal">
+  <div class="sheet">
+    <div class="sheet-h">
+      <h3>帳號設定</h3>
+      <button class="icon-btn" id="acctClose" style="border:none;background:var(--surface-2)">✕</button>
+    </div>
+    <div class="sheet-b">
+      <div class="acct-cur" id="acctCur"></div>
+      <button class="acct-item" id="acctSwitch">🔄 切換使用者</button>
+      <button class="acct-item" id="acctTemplate">🗂️ 從範本更新我的卡片</button>
+      <button class="acct-item" id="acctMerge">🧩 匯入範本卡片(保留自建卡)</button>
+      <button class="acct-item" id="acctRename">✏️ 重新命名</button>
+      <button class="acct-item" id="acctPin">🔒 設定 / 變更密碼</button>
+      <button class="acct-item" id="acctClearRecs">🧹 清除所有消費記錄(保留卡片)</button>
+      <button class="acct-item danger" id="acctDelete">🗑️ 刪除此帳號與所有資料</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   回饋帳本 — 信用卡刷卡回饋記錄
+   單檔 HTML · 資料儲存於瀏覽器 localStorage
+   ============================================================ */
+
+const USERS_KEY='ccr_users', CUR_KEY='ccr_current';
+
+/* ☁️ 雲端同步:把你的 Google Apps Script /exec 網址貼進 SCRIPT_URL 即可啟用雲端帳號(跨裝置同步);
+   留空字串則為本機模式(資料只存這台裝置)。 */
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbyv1CN2R_x3lQZFnpEVB9rW81Muso0ZNZ8SGbULBo8P-KsQ-QTjRdRUG1DhCy4TrGIA_A/exec';
+const CLOUD=()=>/^https:\/\/script\.google\.com\/.+\/exec\b/.test(SCRIPT_URL);
+const CLOUD_SESSION='ccr_cloud_session';
+
+/* 新使用者預設資料:'cards' = 只給範例卡片、消費記錄清零(預設);
+   'none' = 完全空白(連範例卡片都不給);'full' = 範例卡片 + 範例消費記錄(原本的展示用) */
+const SEED_MODE='cards';
+
+const THEMES={
+  jade:['#1f7a5c','#11503c'], ocean:['#236f86','#0c3142'],
+  plum:['#5b2a4e','#2c1226'], copper:['#9a5a2c','#5a2f16'],
+  midnight:['#2b3350','#11162a'], berry:['#8a2d4a','#4a1126'],
+  forest:['#3a6b3a','#1d3a1d'], gold:['#b0883a','#6b4f1c'],
+  slate:['#4a5160','#272c38'], wine:['#7a2330','#3d0f16'],
+};
+const THEME_KEYS=Object.keys(THEMES);
+
+const DEFAULT_CATEGORIES=[
+  ['LINE Pay','💚'],['Apple Pay','🍎'],['街口支付','🟠'],
+  ['蝦皮','🦐'],['淘寶','🛒'],['momo','🛍️'],
+  ['日本','🇯🇵'],['韓國','🇰🇷'],['泰國','🇹🇭'],
+];
+let categories=DEFAULT_CATEGORIES.map(x=>x.slice());
+const catIcon=name=>{const f=categories.find(c=>c[0]===name);return f?f[1]:'🏷️';};
+
+/* ---------- state ---------- */
+let cards=[], records=[];
+let currentUser=null;
+let currentMonth='ALL';
+let rankCat='日本';
+let editingCardId=null;
+let modalTheme='jade';
+let chartCard=null, chartCat=null;
+
+/* ---------- per-user storage ---------- */
+const uk=s=>'ccr_u_'+currentUser.id+'_'+s;            // 使用者專屬的儲存鍵
+function load(){
+  try{cards=JSON.parse(localStorage.getItem(uk('cards')))||[]}catch(e){cards=[]}
+  try{records=JSON.parse(localStorage.getItem(uk('records')))||[]}catch(e){records=[]}
+  try{const ct=JSON.parse(localStorage.getItem(uk('cats')));categories=(ct&&ct.length)?ct:DEFAULT_CATEGORIES.map(x=>x.slice());}catch(e){categories=DEFAULT_CATEGORIES.map(x=>x.slice());}
+}
+function saveCards(){if(currentUser)localStorage.setItem(uk('cards'),JSON.stringify(cards))}
+function saveRecs(){if(currentUser)localStorage.setItem(uk('records'),JSON.stringify(records))}
+function saveCats(){if(currentUser)localStorage.setItem(uk('cats'),JSON.stringify(categories))}
+
+/* ---------- users / auth ---------- */
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||[]}catch(e){return []}}
+function setUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
+function hashPin(p){if(!p)return '';let h=5381;for(const ch of String(p))h=((h*33)+ch.charCodeAt(0))>>>0;return 'h'+h.toString(36);}
+/* 把舊版(單一使用者)的資料搬進第一個帳號「我」 */
+function migrateLegacy(){
+  if(getUsers().length)return;
+  const lc=localStorage.getItem('ccr_cards'), lr=localStorage.getItem('ccr_records');
+  if(lc||lr){
+    const id=uid();
+    setUsers([{id,name:'我',pin:'',created:Date.now()}]);
+    localStorage.setItem('ccr_u_'+id+'_cards',lc||'[]');
+    localStorage.setItem('ccr_u_'+id+'_records',lr||'[]');
+    localStorage.setItem('ccr_u_'+id+'_seen','1');
+    localStorage.setItem(CUR_KEY,id);
+    ['ccr_cards','ccr_records','ccr_seen'].forEach(k=>localStorage.removeItem(k));
+  }
+}
+
+/* ---------- helpers ---------- */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fmt=n=>Math.round(n).toLocaleString('zh-TW');
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const monthOf=d=>d.slice(0,7);
+const quarterOf=d=>{const [y,m]=d.split('-');return y+'-Q'+(Math.floor((+m-1)/3)+1);};
+const rateOf=(card,cat)=>{ if(card.rates && card.rates[cat]!=null && card.rates[cat]!=='') return +card.rates[cat]; return +card.defaultRate||0; };
+const bonusRateOf=(card,cat)=>{ if(card.bonusRates && card.bonusRates[cat]!=null && card.bonusRates[cat]!=='') return +card.bonusRates[cat]; return null; };
+const effRate=(card,cat,bonus)=>{ if(bonus){ const b=bonusRateOf(card,cat); if(b!=null) return b; } return rateOf(card,cat); };
+const cardById=id=>cards.find(c=>c.id===id);
+
+/* 現金(虛擬卡):記純現金支出,無回饋,不列入卡片管理/回饋排行 */
+const CASH_ID='__cash__';
+const CASH_GRAD=['#6f8f7d','#3f5a4c'];
+const isCash=id=>id===CASH_ID;
+const nameOf=id=>isCash(id)?'現金':(cardById(id)?cardById(id).name:'已刪除卡片');
+const colorOf=id=>isCash(id)?CASH_GRAD[0]:(THEMES[cardById(id)?.theme]||THEMES.slate)[0];
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1900);}
+function avatarTheme(name){let h=0;for(const ch of (name||'?'))h=(h*31+ch.charCodeAt(0))>>>0;return THEME_KEYS[h%THEME_KEYS.length];}
+function avatarGrad(name){const [a,b]=THEMES[avatarTheme(name)];return `linear-gradient(135deg,${a},${b})`;}
+
+/* ---------- seed sample data ---------- */
+function seed(){
+  if(localStorage.getItem(uk('seen'))) return;
+  cards = (SEED_MODE==='none') ? [] : [
+    {id:uid(),name:'富邦 J 卡',theme:'midnight',defaultRate:1,cap:1000,rates:{日本:3,韓國:3,泰國:3}},
+    {id:uid(),name:'玉山 熊本熊卡',theme:'gold',defaultRate:1,cap:500,rates:{日本:8.5}},
+    {id:uid(),name:'聯邦 吉鶴卡',theme:'copper',defaultRate:1,cap:1200,rates:{日本:7}},
+    {id:uid(),name:'玉山 Unicard',theme:'jade',defaultRate:1,cap:0,rates:{日本:4.5,韓國:4.5,'其他海外':4.5}},
+    {id:uid(),name:'中信 LINE Pay 卡',theme:'forest',defaultRate:1,cap:450,rates:{日本:5,韓國:5,'其他海外':2.8}},
+  ];
+  records=[];
+  if(SEED_MODE==='full'){
+    const ym=monthOf(todayStr());
+    const mk=(day,cardIdx,cat,amt,note)=>{
+      const c=cards[cardIdx]; const r=rateOf(c,cat);
+      return {id:uid(),date:ym+'-'+String(day).padStart(2,'0'),cardId:c.id,cat,amount:amt,rate:r,cashback:Math.round(amt*r/100),note:note||''};
+    };
+    records=[
+      mk(2,2,'餐飲',880,'聚餐'), mk(4,0,'網購',2400,'家電'),
+      mk(6,1,'旅遊住宿',6200,'訂房'), mk(8,0,'行動支付',350,'超商'),
+      mk(11,2,'娛樂訂閱',390,'串流'), mk(13,1,'交通',1200,'高鐵'),
+      mk(15,0,'超市量販',1650,'採買'), mk(18,2,'餐飲',1280,'慶生'),
+      mk(21,1,'餐飲',640,'午餐'), mk(24,0,'一般消費',2900,''),
+    ];
+  }
+  saveCards();saveRecs();
+  localStorage.setItem(uk('seen'),'1');
+}
+
+/* ---------- filtered records ---------- */
+function filtered(){
+  if(currentMonth==='ALL') return records;
+  return records.filter(r=>monthOf(r.date)===currentMonth);
+}
+
+/* ---------- stats ---------- */
+function stats(recs){
+  let spend=0,cb=0; const byCard={},byCat={};
+  recs.forEach(r=>{
+    spend+=r.amount; cb+=r.cashback;
+    byCard[r.cardId]=byCard[r.cardId]||{spend:0,cb:0}; byCard[r.cardId].spend+=r.amount; byCard[r.cardId].cb+=r.cashback;
+    byCat[r.cat]=byCat[r.cat]||{spend:0,cb:0}; byCat[r.cat].spend+=r.amount; byCat[r.cat].cb+=r.cashback;
+  });
+  return {spend,cb,byCard,byCat,count:recs.length,rate:spend?cb/spend*100:0};
+}
+
+/* ---------- cap enforcement: recompute every record's effective cashback ----------
+   每月、每卡的回饋累積到上限後自動封頂,超出部分回饋以 0 計。
+   依日期先後順序計算,所以新增/刪除/改上限後都會自動重算。 */
+function syncCashbacks(){
+  const byCard={};
+  records.forEach(r=>{(byCard[r.cardId]=byCard[r.cardId]||[]).push(r);});
+  Object.values(byCard).forEach(recs=>{
+    const card=cardById(recs[0].cardId);
+    const cap=(card&&card.cap)?+card.cap:0;
+    const bonusCap=(card&&card.bonusCap)?+card.bonusCap:0;
+    const bPeriod=(card&&card.bonusCapPeriod)||'month';
+    recs.sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+    const accTotal={};  // 每月:總回饋上限累計
+    const accBonus={};  // 每月或每季:達標回饋上限累計
+    recs.forEach(r=>{
+      const rate=card?effRate(card,r.cat,r.bonus):(+r.rate||0);
+      r.rate=rate;
+      const raw=Math.round(r.amount*rate/100);
+      r.uncapped=raw;
+      let cb=raw, capped=false;
+      const mk=monthOf(r.date);
+      const bk=bPeriod==='quarter'?quarterOf(r.date):mk;
+      if(card && r.bonus && bonusCap>0){
+        const broom=Math.max(0,bonusCap-(accBonus[bk]||0));
+        if(cb>broom){cb=broom;capped=true;}
+      }
+      if(cap>0){
+        const room=Math.max(0,cap-(accTotal[mk]||0));
+        if(cb>room){cb=room;capped=true;}
+      }
+      r.cashback=cb; r.capped=capped;
+      accTotal[mk]=(accTotal[mk]||0)+cb;
+      if(r.bonus) accBonus[bk]=(accBonus[bk]||0)+cb;
+    });
+  });
+}
+
+/* 指定卡片在某個月份已累積的回饋(用於上限進度條) */
+function cardMonthCashback(cardId,ym){
+  return records.filter(r=>r.cardId===cardId&&monthOf(r.date)===ym)
+    .reduce((s,r)=>s+r.cashback,0);
+}
+/* 指定卡片某月的「達標」回饋(每月上限用) */
+function cardMonthBonusCashback(cardId,ym){
+  return records.filter(r=>r.cardId===cardId&&r.bonus&&monthOf(r.date)===ym)
+    .reduce((s,r)=>s+r.cashback,0);
+}
+/* 指定卡片、含 ym 那一季的「達標」回饋(每季上限用) */
+function cardQuarterBonusCashback(cardId,ym){
+  const q=quarterOf(ym+'-01');
+  return records.filter(r=>r.cardId===cardId&&r.bonus&&quarterOf(r.date)===q)
+    .reduce((s,r)=>s+r.cashback,0);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function renderAll(){
+  syncCashbacks();
+  renderMonths();
+  const recs=filtered(), st=stats(recs);
+  renderHero(st);
+  renderKPIs(st);
+  renderSplit(st);
+  renderBonusCap(recs);
+  renderRanking();
+  renderCharts(st);
+  renderRecords();
+  renderCards();
+  renderQuickTable();
+  refreshSelects();
+  saveRecs();
+}
+
+function renderMonths(){
+  const sel=document.getElementById('monthSel');
+  const months=[...new Set(records.map(r=>monthOf(r.date)))].sort().reverse();
+  if(currentMonth!=='ALL' && !months.includes(currentMonth)) currentMonth='ALL';
+  sel.innerHTML='<option value="ALL">全部</option>'+months.map(m=>{
+    const [y,mo]=m.split('-'); return `<option value="${m}">${y} 年 ${+mo} 月</option>`;
+  }).join('');
+  sel.value=currentMonth;
+}
+
+function renderHero(st){
+  document.getElementById('heroCashback').textContent=fmt(st.cb);
+  document.getElementById('heroRate').textContent=st.rate.toFixed(2)+'%';
+  document.getElementById('heroSpend').textContent=fmt(st.spend);
+  document.getElementById('heroCount').textContent=st.count;
+  let best='—';
+  const entries=Object.entries(st.byCard).filter(([id,v])=>!isCash(id)&&v.cb>0).sort((a,b)=>b[1].cb-a[1].cb);
+  if(entries.length){best=nameOf(entries[0][0]);}
+  document.getElementById('heroBestCard').textContent=best;
+}
+
+function renderKPIs(st){
+  document.getElementById('kCashback').textContent=fmt(st.cb);
+  document.getElementById('kSpend').textContent=fmt(st.spend);
+  document.getElementById('kRate').textContent=st.rate.toFixed(2);
+}
+
+function renderBonusCap(recs){
+  const list=document.getElementById('bonusCapList');
+  const byCard={}; let total=0;
+  recs.forEach(r=>{ if(r.bonus && !isCash(r.cardId)){ byCard[r.cardId]=(byCard[r.cardId]||0)+r.cashback; total+=r.cashback; } });
+  document.getElementById('bonusTotal').textContent='本期達標回饋 $'+fmt(total);
+  const capCards=cards.filter(c=>c.cap>0);
+  if(!capCards.length){
+    list.innerHTML='<div class="empty" style="padding:18px 12px"><span class="em">🎯</span>還沒有設定回饋上限的卡片。到「我的卡片」為卡片填「每月回饋上限」,即可在此追蹤達標回饋累積。</div>';
+    return;
+  }
+  list.innerHTML=capCards.map(c=>{
+    const used=byCard[c.id]||0;
+    const pct=Math.min(100,used/c.cap*100);
+    const full=used>=c.cap;
+    const remain=Math.max(0,c.cap-used);
+    const [g1,g2]=THEMES[c.theme]||THEMES.jade;
+    return `<div class="bcap-row">
+      <span class="cardchip" style="background:linear-gradient(135deg,${g1},${g2})"></span>
+      <div class="bcap-main">
+        <div class="bcap-top"><span class="bcap-nm">${esc(c.name)}</span><span class="bcap-num">$${fmt(used)} / $${fmt(c.cap)}</span></div>
+        <div class="bcap-track"><div class="bcap-fill ${full?'full':''}" style="width:${pct}%"></div></div>
+        <div class="bcap-foot">${full?'<span class="bcap-full">⚠ 已達回饋上限</span>':`還可拿 $${fmt(remain)} 達標回饋`}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSplit(st){
+  const cash=st.byCard[CASH_ID]?st.byCard[CASH_ID].spend:0;
+  const card=st.spend-cash;
+  document.getElementById('splitCard').textContent=fmt(card);
+  document.getElementById('splitCash').textContent=fmt(cash);
+  document.getElementById('splitTotal').textContent=fmt(st.spend);
+  const total=st.spend||1;
+  document.getElementById('splitBarCard').style.width=(card/total*100)+'%';
+  document.getElementById('splitBarCash').style.width=(cash/total*100)+'%';
+  document.getElementById('splitMonth').textContent=(currentMonth==='ALL'?'全部月份':(currentMonth.replace('-',' 年 ')+' 月'));
+}
+
+function renderRanking(){
+  const chips=document.getElementById('rankChips');
+  chips.innerHTML=categories.map(([c,ic])=>
+    `<button class="chip ${c===rankCat?'on':''}" data-cat="${c}">${ic} ${c}</button>`).join('');
+  chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{rankCat=b.dataset.cat;renderRanking();});
+
+  const list=document.getElementById('rankList');
+  if(!cards.length){list.innerHTML='<div class="empty"><span class="em">💳</span>還沒有卡片,先到「我的卡片」新增一張</div>';return;}
+  const sample=1000;
+  const ranked=cards.map(c=>{const r=rateOf(c,rankCat);return {c,r,est:sample*r/100};}).sort((a,b)=>b.r-a.r);
+  list.innerHTML=ranked.map((x,i)=>{
+    const [g1,g2]=THEMES[x.c.theme]||THEMES.jade;
+    const top=i===0&&x.r>0;
+    const capTxt=x.c.cap?` · 上限 NT$${fmt(x.c.cap)}`:'';
+    return `<div class="rank-row ${top?'top':''}">
+      <div class="rank-pos">${i+1}</div>
+      <div class="cardchip" style="background:linear-gradient(135deg,${g1},${g2})"></div>
+      <div class="rank-name">
+        <div class="nm">${esc(x.c.name)}${top?'<span class="winner-tag">最賺</span>':''}</div>
+        <div class="meta">預設 ${x.c.defaultRate||0}%${capTxt}</div>
+      </div>
+      <div class="rank-rate">
+        <div class="pct">${x.r}%</div>
+        <div class="est">刷千元 +${fmt(x.est)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCharts(st){
+  // card doughnut
+  const ce=document.getElementById('chartCardEmpty'), cc=document.getElementById('chartCard');
+  const cardEntries=Object.entries(st.byCard).sort((a,b)=>b[1].spend-a[1].spend);
+  if(chartCard){chartCard.destroy();chartCard=null;}
+  if(!cardEntries.length){cc.style.display='none';ce.innerHTML='<div class="empty"><span class="em">📊</span>本期還沒有消費記錄</div>';}
+  else{
+    cc.style.display='block';ce.innerHTML='';
+    chartCard=new Chart(cc,{type:'doughnut',data:{
+      labels:cardEntries.map(([id])=>nameOf(id)),
+      datasets:[{data:cardEntries.map(([,v])=>v.spend),
+        backgroundColor:cardEntries.map(([id])=>colorOf(id)),
+        borderColor:'#FBFAF6',borderWidth:3,hoverOffset:6}]
+    },options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{family:"'Noto Sans TC'",size:12},padding:12,boxWidth:12,usePointStyle:true}},
+      tooltip:{callbacks:{label:c=>` ${c.label}: NT$${fmt(c.parsed)}`}}},maintainAspectRatio:false}});
+  }
+  // category bar
+  const be=document.getElementById('chartCatEmpty'), bc=document.getElementById('chartCat');
+  const catEntries=Object.entries(st.byCat).sort((a,b)=>b[1].cb-a[1].cb);
+  if(chartCat){chartCat.destroy();chartCat=null;}
+  if(!catEntries.length){bc.style.display='none';be.innerHTML='<div class="empty"><span class="em">🪙</span>累積回饋後會顯示分佈</div>';}
+  else{
+    bc.style.display='block';be.innerHTML='';
+    chartCat=new Chart(bc,{type:'bar',data:{
+      labels:catEntries.map(([c])=>catIcon(c)+' '+c),
+      datasets:[{data:catEntries.map(([,v])=>v.cb),backgroundColor:'#1f7a5c',borderRadius:6,maxBarThickness:26}]
+    },options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` 回饋 NT$${fmt(c.parsed.x)}`}}},
+      scales:{x:{ticks:{font:{family:"'Space Grotesk'"},callback:v=>'$'+fmt(v)},grid:{color:'rgba(0,0,0,.05)'}},
+        y:{ticks:{font:{family:"'Noto Sans TC'",size:11.5}},grid:{display:false}}},maintainAspectRatio:false}});
+  }
+}
+
+function renderRecords(){
+  const recs=filtered().slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  const fCard=document.getElementById('filterCard').value;
+  const fCat=document.getElementById('filterCat').value;
+  const shown=recs.filter(r=>(!fCard||r.cardId===fCard)&&(!fCat||r.cat===fCat));
+  document.getElementById('recCount').textContent=shown.length+' 筆';
+  const el=document.getElementById('recList');
+  if(!shown.length){el.innerHTML='<div class="empty"><span class="em">🧾</span>'+(records.length?'這個篩選沒有記錄':'還沒有消費記錄,上方記第一筆吧')+'</div>';return;}
+  el.innerHTML=shown.map(r=>{
+    const g=colorOf(r.cardId);
+    const cbHtml=isCash(r.cardId)
+      ? `<span style="color:var(--ink-faint)">現金 · 無回饋</span>`
+      : (r.capped
+        ? `<span class="strike">+$${fmt(r.uncapped)}</span>+$${fmt(r.cashback)} · ${r.rate}%<span class="cap-tag">已封頂</span>`
+        : `+$${fmt(r.cashback)} · ${r.rate}%${r.bonus?'<span class="bonus-tag">達標</span>':''}`);
+    return `<div class="rec">
+      <div class="rec-ico">${isCash(r.cardId)?'💵':(catIcon(r.cat))}</div>
+      <div class="rec-mid">
+        <div class="t">${esc(r.note||r.cat)}</div>
+        <div class="s"><span class="dot" style="background:${g}"></span>${esc(nameOf(r.cardId))}${isCash(r.cardId)?'':' · '+r.cat} · ${r.date.slice(5)}</div>
+      </div>
+      <div class="rec-right">
+        <div class="amt">$${fmt(r.amount)}</div>
+        <div class="cb">${cbHtml}</div>
+      </div>
+      <button class="rec-del" data-id="${r.id}">✕</button>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.rec-del').forEach(b=>b.onclick=()=>{
+    records=records.filter(x=>x.id!==b.dataset.id);saveRecs();renderAll();schedulePush();toast('已刪除一筆');
+  });
+}
+
+function renderCards(){
+  const grid=document.getElementById('cardGrid');
+  const capMonth=currentMonth==='ALL'?monthOf(todayStr()):currentMonth;
+  const [my,mm]=capMonth.split('-');
+  grid.innerHTML=cards.map((c,i)=>{
+    const [g1,g2]=THEMES[c.theme]||THEMES.jade;
+    const bonus=c.rates?Object.entries(c.rates).filter(([,v])=>v!==''&&v!=null):[];
+    let capHtml='';
+    if(c.cap){
+      const used=cardMonthCashback(c.id,capMonth);
+      const pct=Math.min(100,used/c.cap*100);
+      const full=used>=c.cap;
+      capHtml=`<div class="cap-wrap">
+        <div class="cap-head"><span>${+mm}月回饋上限${full?' · 已封頂':''}</span><span><span class="num">$${fmt(used)}</span> / $${fmt(c.cap)}</span></div>
+        <div class="cap-track"><div class="cap-fill ${full?'full':''}" style="width:${pct}%"></div></div>
+      </div>`;
+    }
+    if(c.bonusCap){
+      const quarterly=c.bonusCapPeriod==='quarter';
+      const bused=quarterly?cardQuarterBonusCashback(c.id,capMonth):cardMonthBonusCashback(c.id,capMonth);
+      const bpct=Math.min(100,bused/c.bonusCap*100);
+      const bfull=bused>=c.bonusCap;
+      const blabel=quarterly?('第'+quarterOf(capMonth+'-01').split('-Q')[1]+'季達標上限'):(+mm+'月達標回饋上限');
+      capHtml+=`<div class="cap-wrap">
+        <div class="cap-head"><span>${blabel}${bfull?' · 已封頂':''}</span><span><span class="num">$${fmt(bused)}</span> / $${fmt(c.bonusCap)}</span></div>
+        <div class="cap-track"><div class="cap-fill bonus ${bfull?'full':''}" style="width:${bpct}%"></div></div>
+      </div>`;
+    }
+    return `<div class="credit" draggable="true" data-id="${c.id}" data-i="${i}" style="background:linear-gradient(135deg,${g1},${g2})">
+      <div class="c-move">
+        <button class="cmv-btn" data-i="${i}" data-d="-1" ${i===0?'disabled':''}>◀</button>
+        <button class="cmv-btn" data-i="${i}" data-d="1" ${i===cards.length-1?'disabled':''}>▶</button>
+      </div>
+      <div class="c-top">
+        <div class="c-emv"></div>
+        <div class="c-rate"><div class="p">${c.defaultRate||0}%</div><div class="l">預設回饋</div></div>
+      </div>
+      <div class="c-name">${esc(c.name)}</div>
+      <div class="c-meta">
+        ${bonus.length?bonus.map(([k,v])=>{const b=bonusRateOf(c,k);return `<span class="c-badge">${catIcon(k)}${k} ${v}%${b!=null?`→${b}%`:''}</span>`;}).join(''):'<span style="opacity:.7">點擊設定通路回饋</span>'}
+      </div>
+      ${c.note?`<div class="c-note">${esc(c.note)}</div>`:''}
+      ${capHtml}
+    </div>`;
+  }).join('')+`<button class="add-card" id="addCardBtn"><span><span class="plus">＋</span>新增卡片</span></button>`;
+
+  grid.querySelectorAll('.credit').forEach(el=>el.onclick=()=>openCardModal(el.dataset.id));
+  grid.querySelectorAll('.cmv-btn').forEach(b=>b.onclick=e=>{e.stopPropagation();moveCard(+b.dataset.i,+b.dataset.d);});
+  let cFrom=null;
+  grid.querySelectorAll('.credit').forEach(el=>{
+    el.addEventListener('dragstart',()=>{cFrom=+el.dataset.i;el.classList.add('dragging');});
+    el.addEventListener('dragend',()=>{cFrom=null;grid.querySelectorAll('.credit').forEach(x=>x.classList.remove('dragging','over'));});
+    el.addEventListener('dragover',e=>e.preventDefault());
+    el.addEventListener('dragenter',()=>el.classList.add('over'));
+    el.addEventListener('dragleave',()=>el.classList.remove('over'));
+    el.addEventListener('drop',e=>{
+      e.preventDefault();
+      const to=+el.dataset.i;
+      if(cFrom===null||cFrom===to)return;
+      const [m]=cards.splice(cFrom,1);
+      cards.splice(to,0,m);
+      saveCards();renderAll();schedulePush();
+    });
+  });
+  document.getElementById('addCardBtn').onclick=()=>openCardModal(null);
+}
+function moveCard(i,dir){
+  const j=i+dir;
+  if(j<0||j>=cards.length)return;
+  const t=cards[i];cards[i]=cards[j];cards[j]=t;
+  saveCards();renderAll();schedulePush();
+}
+
+function renderQuickTable(){
+  const wrap=document.getElementById('quickTable');
+  if(!cards.length){wrap.innerHTML='<div class="empty"><span class="em">📋</span>還沒有卡片,先到「我的卡片」新增</div>';return;}
+  let h='<table class="qt"><thead><tr><th class="cat-col">通路 / 類別</th>';
+  cards.forEach(c=>{
+    const [g1,g2]=THEMES[c.theme]||THEMES.jade;
+    const cap=c.cap?`<span class="qt-cap">上限 $${fmt(c.cap)}</span>`:'';
+    h+=`<th><span class="qt-chip" style="background:linear-gradient(135deg,${g1},${g2})"></span><span class="qt-cardname">${esc(c.name)}</span>${cap}</th>`;
+  });
+  h+='</tr></thead><tbody>';
+  categories.forEach(([cat,ic])=>{
+    const rates=cards.map(c=>rateOf(c,cat));
+    const max=Math.max(...rates);
+    h+=`<tr><td class="cat-col">${ic} ${cat}</td>`;
+    cards.forEach((c,i)=>{
+      const r=rates[i];
+      const best=r===max&&max>0;
+      const hasCat=c.rates&&c.rates[cat]!=null&&c.rates[cat]!=='';
+      const b=bonusRateOf(c,cat);
+      h+=`<td class="${best?'best':''} ${hasCat?'bonus':''}">${r}%${best?'<span class="crown">♔</span>':''}${b!=null?`<span class="qt-bonus">達標 ${b}%</span>`:''}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  wrap.innerHTML=h;
+}
+
+function refreshSelects(){
+  const opts=cards.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  const cashOpt=`<option value="${CASH_ID}">💵 現金</option>`;
+  const rCard=document.getElementById('rCard');
+  const prev=rCard.value;
+  rCard.innerHTML=opts+cashOpt;
+  if(prev===CASH_ID||cards.find(c=>c.id===prev))rCard.value=prev;
+  document.getElementById('rCat').innerHTML=categories.map(([c,ic])=>`<option value="${c}">${ic} ${c}</option>`).join('');
+  document.getElementById('filterCard').innerHTML='<option value="">全部卡片</option>'+opts+cashOpt;
+  document.getElementById('filterCat').innerHTML='<option value="">全部類別</option>'+categories.map(([c,ic])=>`<option value="${c}">${ic} ${c}</option>`).join('');
+  updatePreview();
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+
+/* ============================================================
+   RECORD FORM
+   ============================================================ */
+function updatePreview(){
+  const cid=document.getElementById('rCard').value;
+  const cat=document.getElementById('rCat').value;
+  const amt=+document.getElementById('rAmount').value||0;
+  const prevRate=document.getElementById('prevRate');
+  const prevCb=document.getElementById('prevCashback');
+  const wrap=document.getElementById('bonusToggleWrap');
+  const chk=document.getElementById('rBonus');
+  document.getElementById('rCatField').style.display=isCash(cid)?'none':'';
+  if(isCash(cid)){wrap.style.display='none';prevRate.textContent='現金 · 無回饋';prevCb.textContent='0';return;}
+  const c=cardById(cid);
+  if(!c){wrap.style.display='none';prevRate.textContent='—';prevCb.textContent='0';return;}
+  const bonus=bonusRateOf(c,cat);
+  if(bonus!=null){
+    wrap.style.display='';
+    document.getElementById('bonusHint').textContent='('+rateOf(c,cat)+'% → '+bonus+'%)';
+  }else{ wrap.style.display='none'; chk.checked=false; }
+  const useBonus=bonus!=null && chk.checked;
+  const r=effRate(c,cat,useBonus);
+  const raw=Math.round(amt*r/100);
+  let cb=raw, note='';
+  if(c.cap){
+    const ym=monthOf(document.getElementById('rDate').value||todayStr());
+    const room=Math.max(0,c.cap-cardMonthCashback(c.id,ym));
+    if(raw>room){cb=room;note=' · 超過上限封頂';}
+  }
+  prevRate.textContent=r+'% 回饋'+(useBonus?'(達標)':'')+note;
+  prevCb.textContent=fmt(cb);
+}
+function addRecord(){
+  const cid=document.getElementById('rCard').value;
+  const amt=+document.getElementById('rAmount').value;
+  if(!amt||amt<=0){toast('請輸入金額');return;}
+  const cat=document.getElementById('rCat').value;
+  const date=document.getElementById('rDate').value||todayStr();
+  const note=document.getElementById('rNote').value.trim();
+  let rec;
+  if(isCash(cid)){
+    rec={id:uid(),date,cardId:CASH_ID,cat:'現金',amount:amt,rate:0,cashback:0,note};
+  }else{
+    const c=cardById(cid);
+    if(!c){toast('請先新增一張卡片,或選擇「現金」');return;}
+    const useBonus=bonusRateOf(c,cat)!=null && document.getElementById('rBonus').checked;
+    const r=effRate(c,cat,useBonus);
+    rec={id:uid(),date,cardId:cid,cat,amount:amt,rate:r,cashback:Math.round(amt*r/100),note,bonus:useBonus};
+  }
+  records.push(rec);
+  document.getElementById('rAmount').value='';document.getElementById('rNote').value='';
+  document.getElementById('rBonus').checked=false;
+  renderAll();
+  schedulePush();
+  toast(isCash(cid)?`已記錄現金支出 $${fmt(amt)}`
+    :(rec.capped?`已新增 · 回饋 +$${fmt(rec.cashback)}(已達上限)`:`已新增 · 回饋 +$${fmt(rec.cashback)}${rec.bonus?'(達標)':''}`));
+}
+
+/* ============================================================
+   CARD MODAL
+   ============================================================ */
+function openCatModal(){renderCatList();document.getElementById('catModal').classList.add('on');}
+function closeCatModal(){document.getElementById('catModal').classList.remove('on');}
+function renderCatList(){
+  const el=document.getElementById('catList');
+  el.innerHTML=categories.map((c,i)=>`<div class="cat-row" draggable="true" data-i="${i}">
+    <span class="grip">⣿</span>
+    <span class="ci">${c[1]||'🏷️'}</span>
+    <span class="cn">${esc(c[0])}</span>
+    <button class="cmv" data-i="${i}" data-d="-1" ${i===0?'disabled':''}>▲</button>
+    <button class="cmv" data-i="${i}" data-d="1" ${i===categories.length-1?'disabled':''}>▼</button>
+    <button class="cx" data-i="${i}">✕</button>
+  </div>`).join('');
+  el.querySelectorAll('.cx').forEach(b=>b.onclick=e=>{e.stopPropagation();deleteCat(+b.dataset.i);});
+  el.querySelectorAll('.cmv').forEach(b=>b.onclick=e=>{e.stopPropagation();moveCat(+b.dataset.i,+b.dataset.d);});
+  let from=null;
+  el.querySelectorAll('.cat-row').forEach(row=>{
+    row.addEventListener('dragstart',()=>{from=+row.dataset.i;row.classList.add('dragging');});
+    row.addEventListener('dragend',()=>{from=null;el.querySelectorAll('.cat-row').forEach(r=>r.classList.remove('dragging','over'));});
+    row.addEventListener('dragover',e=>{e.preventDefault();});
+    row.addEventListener('dragenter',()=>row.classList.add('over'));
+    row.addEventListener('dragleave',()=>row.classList.remove('over'));
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      const to=+row.dataset.i;
+      if(from===null||from===to)return;
+      const [m]=categories.splice(from,1);
+      categories.splice(to,0,m);
+      commitCats();
+    });
+  });
+}
+function moveCat(i,dir){
+  const j=i+dir;
+  if(j<0||j>=categories.length)return;
+  const t=categories[i];categories[i]=categories[j];categories[j]=t;
+  commitCats();
+}
+function commitCats(){
+  saveCats();renderCatList();refreshSelects();renderAll();schedulePush();
+}
+function addCat(){
+  const name=document.getElementById('newCatName').value.trim();
+  const icon=document.getElementById('newCatIcon').value.trim()||'🏷️';
+  if(!name){toast('請輸入通路名稱');return;}
+  if(categories.some(c=>c[0]===name)){toast('這個通路已存在');return;}
+  categories.push([name,icon]);
+  document.getElementById('newCatName').value='';document.getElementById('newCatIcon').value='';
+  commitCats();
+  toast('已新增通路');
+}
+function deleteCat(i){
+  const c=categories[i]; if(!c)return;
+  const name=c[0];
+  const usedRec=records.some(r=>r.cat===name);
+  const usedCard=cards.some(cd=>(cd.rates&&cd.rates[name]!=null)||(cd.bonusRates&&cd.bonusRates[name]!=null));
+  if(!confirm('刪除通路「'+name+'」?'+(usedRec?'(已有消費記錄使用,記錄會保留)':'')))return;
+  categories.splice(i,1);
+  saveCats();
+  if(usedCard && confirm('是否一併清除各卡在「'+name+'」的回饋趴數設定?\n\n確定=清除;取消=保留(日後再新增同名通路會沿用)。')){
+    cards.forEach(cd=>{ if(cd.rates) delete cd.rates[name]; if(cd.bonusRates) delete cd.bonusRates[name]; });
+    saveCards();
+  }
+  commitCats();
+  toast('已刪除通路');
+}
+
+function buildModalStatics(){
+  document.getElementById('swatches').innerHTML=THEME_KEYS.map(k=>{
+    const [g1,g2]=THEMES[k];
+    return `<div class="sw" data-theme="${k}" style="background:linear-gradient(135deg,${g1},${g2})"></div>`;
+  }).join('');
+  document.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{
+    modalTheme=s.dataset.theme;
+    document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x.dataset.theme===modalTheme));
+  });
+  document.getElementById('catRates').innerHTML=
+    categories.map(([c,ic])=>
+    `<div class="cat-rate"><span class="nm">${ic} ${c}</span>`+
+    `<input class="r-base" type="number" step="0.1" min="0" data-cat="${c}" placeholder="一般">`+
+    `<input class="r-bonus" type="number" step="0.1" min="0" data-cat="${c}" placeholder="達標"></div>`).join('');
+}
+function openCardModal(id){
+  buildModalStatics();
+  editingCardId=id;
+  const c=id?cardById(id):null;
+  document.getElementById('modalTitle').textContent=c?'編輯卡片':'新增卡片';
+  document.getElementById('cName').value=c?c.name:'';
+  document.getElementById('cRate').value=c?c.defaultRate:'';
+  document.getElementById('cCap').value=c&&c.cap?c.cap:'';
+  document.getElementById('cBonusCap').value=c&&c.bonusCap?c.bonusCap:'';
+  document.getElementById('cBonusPeriod').value=(c&&c.bonusCapPeriod)||'month';
+  document.getElementById('cNote').value=c&&c.note?c.note:'';
+  modalTheme=c?c.theme:'jade';
+  document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x.dataset.theme===modalTheme));
+  document.querySelectorAll('#catRates .r-base').forEach(inp=>{
+    inp.value=(c&&c.rates&&c.rates[inp.dataset.cat]!=null)?c.rates[inp.dataset.cat]:'';
+  });
+  document.querySelectorAll('#catRates .r-bonus').forEach(inp=>{
+    inp.value=(c&&c.bonusRates&&c.bonusRates[inp.dataset.cat]!=null)?c.bonusRates[inp.dataset.cat]:'';
+  });
+  document.getElementById('delCardBtn').style.display=c?'inline-flex':'none';
+  document.getElementById('cardModal').classList.add('on');
+}
+function closeCardModal(){document.getElementById('cardModal').classList.remove('on');}
+function saveCard(){
+  const name=document.getElementById('cName').value.trim();
+  if(!name){toast('請輸入卡片名稱');return;}
+  const defaultRate=+document.getElementById('cRate').value||0;
+  const cap=+document.getElementById('cCap').value||0;
+  const bonusCap=+document.getElementById('cBonusCap').value||0;
+  const bonusCapPeriod=document.getElementById('cBonusPeriod').value||'month';
+  const note=document.getElementById('cNote').value.trim();
+  const rates={}, bonusRates={};
+  document.querySelectorAll('#catRates .r-base').forEach(inp=>{ if(inp.value!=='') rates[inp.dataset.cat]=+inp.value; });
+  document.querySelectorAll('#catRates .r-bonus').forEach(inp=>{ if(inp.value!=='') bonusRates[inp.dataset.cat]=+inp.value; });
+  if(editingCardId){
+    const c=cardById(editingCardId);
+    Object.assign(c,{name,defaultRate,cap,bonusCap,bonusCapPeriod,theme:modalTheme,rates,bonusRates,note});
+  }else{
+    cards.push({id:uid(),name,defaultRate,cap,bonusCap,bonusCapPeriod,theme:modalTheme,rates,bonusRates,note});
+  }
+  saveCards();closeCardModal();renderAll();schedulePush();toast('卡片已儲存');
+}
+function deleteCard(){
+  if(!editingCardId)return;
+  const used=records.some(r=>r.cardId===editingCardId);
+  const msg=used?'這張卡有消費記錄,刪除後記錄會標示為「已刪除卡片」。確定刪除?':'確定刪除這張卡片?';
+  if(!confirm(msg))return;
+  cards=cards.filter(c=>c.id!==editingCardId);
+  saveCards();closeCardModal();renderAll();schedulePush();toast('卡片已刪除');
+}
+
+/* ============================================================
+   IMPORT / EXPORT
+   ============================================================ */
+function exportData(){
+  const blob=new Blob([JSON.stringify({cards,records,exported:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='回饋帳本_'+(currentUser?currentUser.name+'_':'')+todayStr()+'.json';a.click();URL.revokeObjectURL(a.href);
+  toast('已匯出備份');
+}
+function importData(file){
+  const fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const d=JSON.parse(fr.result);
+      if(!Array.isArray(d.cards)||!Array.isArray(d.records))throw 0;
+      if(!confirm('匯入會覆蓋目前所有資料,確定?'))return;
+      cards=d.cards;records=d.records;saveCards();saveRecs();renderAll();schedulePush();toast('已匯入資料');
+    }catch(e){toast('檔案格式錯誤');}
+  };
+  fr.readAsText(file);
+}
+
+/* ============================================================
+   CLOUD SYNC (Google Apps Script + Sheets)
+   ============================================================ */
+let cloudReg=false, pushTimer=null;
+
+async function api(payload){
+  const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(payload)});
+  return res.json();
+}
+
+function setSync(state){
+  const el=document.getElementById('syncDot');
+  if(!el)return;
+  el.style.display=CLOUD()?'inline-flex':'none';
+  const map={ok:['✓','已同步','var(--jade)'],saving:['⟳','同步中…','var(--ink-soft)'],
+    offline:['⚠','離線(已存本機)','var(--gold)'],error:['⚠','請重新登入','var(--rose)']};
+  const [ic,txt,col]=map[state]||map.ok;
+  el.dataset.state=state;
+  el.innerHTML=`<span style="color:${col}">${ic}</span><span class="sync-txt">${txt}</span>`;
+}
+
+function schedulePush(){
+  if(!CLOUD()||!currentUser||!currentUser.token)return;
+  setSync('saving');
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(pushCloud,800);
+}
+async function pushCloud(){
+  if(!CLOUD()||!currentUser||!currentUser.token)return;
+  try{
+    const r=await api({action:'save',username:currentUser.name,token:currentUser.token,data:{cards,records,cats:categories}});
+    setSync(r&&r.ok?'ok':'error');
+  }catch(e){setSync('offline');}
+}
+async function refreshFromCloud(){
+  setSync('saving');
+  try{
+    const r=await api({action:'load',username:currentUser.name,token:currentUser.token});
+    if(r&&r.ok){cards=r.data.cards||[];records=r.data.records||[];if(r.data.cats&&r.data.cats.length)categories=r.data.cats;saveCards();saveRecs();saveCats();renderAll();setSync('ok');}
+    else{setSync('error');toast('登入已逾期,請重新登入');localStorage.removeItem(CLOUD_SESSION);showAuth();}
+  }catch(e){setSync('offline');}
+}
+
+function updateCloudForm(){
+  document.getElementById('clLogin').textContent=cloudReg?'註冊並登入':'登入';
+  document.getElementById('clLogin').disabled=false;
+  document.getElementById('clToReg').textContent=cloudReg?'已有帳號?返回登入':'還沒有帳號?點此註冊';
+  document.getElementById('clErr').textContent='';
+}
+async function cloudSubmit(){
+  const u=document.getElementById('clUser').value.trim();
+  const p=document.getElementById('clPass').value;
+  const err=document.getElementById('clErr');
+  if(!u||!p){err.textContent='請輸入帳號與密碼';return;}
+  const btn=document.getElementById('clLogin');const old=btn.textContent;
+  btn.disabled=true;btn.textContent='連線中…';err.textContent='';
+  try{
+    const r=await api({action:cloudReg?'register':'login',username:u,password:p});
+    if(!r||!r.ok){err.textContent=(r&&r.error)||'操作失敗';btn.disabled=false;btn.textContent=old;return;}
+    enterCloud(u,r.token,r.data,cloudReg);
+  }catch(e){err.textContent='連線失敗,請確認網址與網路';btn.disabled=false;btn.textContent=old;}
+}
+function enterCloud(name,token,data,isNew){
+  currentUser={id:'cloud_'+name,name,token};
+  localStorage.setItem(CLOUD_SESSION,JSON.stringify({name,token}));
+  cards=(data&&data.cards)?data.cards:[];
+  records=(data&&data.records)?data.records:[];
+  categories=(data&&data.cats&&data.cats.length)?data.cats:DEFAULT_CATEGORIES.map(x=>x.slice());
+  if(isNew&&!cards.length&&!records.length){seed();}
+  else{saveCards();saveRecs();saveCats();}
+  document.getElementById('authScreen').classList.remove('on');
+  document.getElementById('clPass').value='';
+  currentMonth='ALL';rankCat='日本';
+  document.getElementById('rDate').value=todayStr();
+  document.querySelector('.tabs button[data-tab="records"]').click();
+  renderUserButton();setSync('ok');renderAll();
+  if(isNew)schedulePush();
+}
+function logoutCloud(){
+  localStorage.removeItem(CLOUD_SESSION);
+  currentUser=null;cards=[];records=[];
+  closeAcct();showAuth();
+}
+async function cloudSetPass(){
+  const np=prompt('輸入新密碼','');
+  if(np==null)return;
+  if(!np.trim()){toast('密碼不可空白');return;}
+  try{
+    const r=await api({action:'setpass',username:currentUser.name,token:currentUser.token,newPassword:np});
+    toast(r&&r.ok?'密碼已變更':((r&&r.error)||'變更失敗'));
+  }catch(e){toast('連線失敗');}
+}
+async function pullTemplate(){
+  if(!CLOUD()||!currentUser||!currentUser.token){toast('僅雲端帳號可用');return;}
+  if(!confirm('用最新的範本卡片覆蓋你目前的卡片?消費記錄會保留,此動作無法復原。'))return;
+  try{
+    const r=await api({action:'template',username:currentUser.name,token:currentUser.token});
+    if(!r||!r.ok){toast((r&&r.error)||'更新失敗');return;}
+    if(!r.cards||!r.cards.length){toast('範本目前沒有卡片');return;}
+    cards=r.cards;
+    if(r.cats&&r.cats.length){categories=r.cats;saveCats();}
+    saveCards();
+    closeAcct();
+    renderAll();
+    schedulePush();
+    toast('已從範本更新卡片與通路');
+  }catch(e){toast('連線失敗,請確認網路');}
+}
+async function mergeTemplate(){
+  if(!CLOUD()||!currentUser||!currentUser.token){toast('僅雲端帳號可用');return;}
+  if(!confirm('匯入範本卡片:範本內的卡片會更新為最新版,你自己新增的卡片會保留。確定?'))return;
+  try{
+    const r=await api({action:'template',username:currentUser.name,token:currentUser.token});
+    if(!r||!r.ok){toast((r&&r.error)||'更新失敗');return;}
+    const tpl=r.cards||[];
+    if(!tpl.length){toast('範本目前沒有卡片');return;}
+    const tplIds=new Set(tpl.map(c=>c.id));
+    const own=cards.filter(c=>!tplIds.has(c.id));   // 你自己新增的卡(不在範本內)
+    cards=[...tpl, ...own];                           // 範本卡更新 + 保留自建卡
+    if(r.cats&&r.cats.length){                        // 合併通路:範本 + 自建(依名稱去重)
+      const names=new Set(r.cats.map(c=>c[0]));
+      categories=[...r.cats, ...categories.filter(c=>!names.has(c[0]))];
+      saveCats();
+    }
+    saveCards();
+    closeAcct();
+    renderAll();
+    schedulePush();
+    toast(`已匯入範本卡片,保留 ${own.length} 張自建卡`);
+  }catch(e){toast('連線失敗,請確認網路');}
+}
+
+/* ============================================================
+   AUTH / USERS
+   ============================================================ */
+let authPinFor=null;
+
+function showAuth(){
+  authPinFor=null;
+  document.getElementById('authScreen').classList.add('on');
+  const cloud=CLOUD();
+  document.getElementById('authCloud').style.display=cloud?'':'none';
+  document.getElementById('userList').style.display=cloud?'none':'';
+  document.getElementById('showNew').style.display=cloud?'none':'';
+  document.getElementById('authNew').style.display='none';
+  document.getElementById('authSub').textContent=cloud?'登入雲端帳號 · 跨裝置同步':'選擇使用者開始記帳';
+  if(cloud){cloudReg=false;updateCloudForm();}
+  else{renderUserList();}
+}
+
+function renderUserList(){
+  const users=getUsers();
+  const list=document.getElementById('userList');
+  if(authPinFor){
+    const u=users.find(x=>x.id===authPinFor);
+    list.innerHTML=`<div class="pin-panel">
+      <span class="user-av big" style="background:${avatarGrad(u.name)}">${esc(u.name[0]||'?')}</span>
+      <div class="pin-nm">${esc(u.name)}</div>
+      <input type="tel" id="pinInput" placeholder="輸入 4 位數密碼" maxlength="4" inputmode="numeric" autocomplete="off">
+      <div class="pin-err" id="pinErr"></div>
+      <div style="display:flex;gap:8px;width:100%">
+        <button class="btn btn-ghost" id="pinBack" style="flex:1">返回</button>
+        <button class="btn btn-primary" id="pinGo" style="flex:2">進入</button>
+      </div>
+    </div>`;
+    const go=()=>{
+      const v=document.getElementById('pinInput').value;
+      if(hashPin(v)===u.pin){enterApp(u);}
+      else{document.getElementById('pinErr').textContent='密碼不正確';document.getElementById('pinInput').value='';}
+    };
+    document.getElementById('pinGo').onclick=go;
+    document.getElementById('pinInput').onkeydown=e=>{if(e.key==='Enter')go();};
+    document.getElementById('pinBack').onclick=()=>{authPinFor=null;renderUserList();};
+    setTimeout(()=>document.getElementById('pinInput').focus(),60);
+    return;
+  }
+  if(!users.length){list.innerHTML='<div class="auth-empty">還沒有使用者,點下方建立第一個。</div>';return;}
+  list.innerHTML=users.map(u=>`<button class="user-chip" data-id="${u.id}">
+    <span class="user-av" style="background:${avatarGrad(u.name)}">${esc(u.name[0]||'?')}</span>
+    <span class="user-chip-nm">${esc(u.name)}</span>
+    ${u.pin?'<span class="lock">🔒</span>':''}
+  </button>`).join('');
+  list.querySelectorAll('.user-chip').forEach(b=>b.onclick=()=>{
+    const u=users.find(x=>x.id===b.dataset.id);
+    if(u.pin){authPinFor=u.id;renderUserList();}else{enterApp(u);}
+  });
+}
+
+function createUser(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){toast('請輸入名稱');return;}
+  const pinRaw=document.getElementById('newPin').value.trim();
+  if(pinRaw && !/^\d{4}$/.test(pinRaw)){toast('密碼需為 4 位數字');return;}
+  const users=getUsers();
+  if(users.some(u=>u.name===name)){toast('這個名稱已存在');return;}
+  const u={id:uid(),name,pin:pinRaw?hashPin(pinRaw):'',created:Date.now()};
+  users.push(u);setUsers(users);
+  document.getElementById('newName').value='';document.getElementById('newPin').value='';
+  enterApp(u);
+}
+
+function enterApp(u){
+  currentUser=u;
+  localStorage.setItem(CUR_KEY,u.id);
+  document.getElementById('authScreen').classList.remove('on');
+  load();
+  if(!cards.length&&!records.length)seed();
+  load();
+  currentMonth='ALL'; rankCat='日本';
+  document.getElementById('rDate').value=todayStr();
+  document.querySelector('.tabs button[data-tab="records"]').click();
+  renderUserButton();
+  renderAll();
+}
+
+function renderUserButton(){
+  if(!currentUser)return;
+  const av=document.getElementById('userAv');
+  av.style.background=avatarGrad(currentUser.name);
+  av.textContent=currentUser.name[0]||'?';
+  document.getElementById('userNm').textContent=currentUser.name;
+}
+
+/* ---- account sheet ---- */
+function acctCurHtml(){
+  const meta = CLOUD() ? '☁️ 雲端帳號 · 跨裝置同步'
+    : ((currentUser.pin?'🔒 已設密碼':'未設密碼')+' · 共 '+getUsers().length+' 位使用者');
+  return `<span class="user-av big" style="background:${avatarGrad(currentUser.name)}">${esc(currentUser.name[0]||'?')}</span>
+    <div><div class="acct-nm">${esc(currentUser.name)}</div>
+    <div class="acct-meta">${meta}</div></div>`;
+}
+function openAcct(){
+  document.getElementById('acctCur').innerHTML=acctCurHtml();
+  const cloud=CLOUD();
+  document.getElementById('acctSwitch').textContent=cloud?'🚪 登出':'🔄 切換使用者';
+  document.getElementById('acctTemplate').style.display=cloud?'':'none';
+  document.getElementById('acctMerge').style.display=cloud?'':'none';
+  document.getElementById('acctPin').textContent=cloud?'🔒 變更雲端密碼':'🔒 設定 / 變更密碼';
+  document.getElementById('acctRename').style.display=cloud?'none':'';
+  document.getElementById('acctDelete').style.display=cloud?'none':'';
+  document.getElementById('acctModal').classList.add('on');
+}
+function closeAcct(){document.getElementById('acctModal').classList.remove('on');}
+
+function renameUser(){
+  const nm=prompt('輸入新的使用者名稱', currentUser.name);
+  if(nm==null)return;
+  const name=nm.trim();
+  if(!name){toast('名稱不可空白');return;}
+  const users=getUsers();
+  if(users.some(u=>u.name===name&&u.id!==currentUser.id)){toast('這個名稱已存在');return;}
+  users.find(u=>u.id===currentUser.id).name=name; currentUser.name=name;
+  setUsers(users);renderUserButton();document.getElementById('acctCur').innerHTML=acctCurHtml();toast('已更新名稱');
+}
+function setPin(){
+  const p=prompt('輸入新的 4 位數密碼(留空則移除密碼)','');
+  if(p==null)return;
+  const pin=p.trim();
+  if(pin && !/^\d{4}$/.test(pin)){toast('密碼需為 4 位數字');return;}
+  const users=getUsers();
+  users.find(u=>u.id===currentUser.id).pin=pin?hashPin(pin):''; currentUser.pin=pin?hashPin(pin):'';
+  setUsers(users);document.getElementById('acctCur').innerHTML=acctCurHtml();toast(pin?'密碼已設定':'已移除密碼');
+}
+function clearAllRecords(){
+  if(!records||!records.length){toast('目前沒有消費記錄');return;}
+  if(!confirm('確定清除「'+currentUser.name+'」的全部 '+records.length+' 筆消費記錄?卡片會保留,此動作無法復原。'))return;
+  records=[];
+  renderAll();
+  schedulePush();
+  closeAcct();
+  toast('已清除所有消費記錄');
+}
+function deleteAccount(){
+  if(!confirm('確定刪除「'+currentUser.name+'」及其所有記帳資料?此動作無法復原。'))return;
+  ['cards','records','seen'].forEach(s=>localStorage.removeItem(uk(s)));
+  setUsers(getUsers().filter(u=>u.id!==currentUser.id));
+  localStorage.removeItem(CUR_KEY);
+  closeAcct();currentUser=null;cards=[];records=[];
+  showAuth();
+}
+
+function bindAuth(){
+  document.getElementById('showNew').onclick=()=>{
+    document.getElementById('authNew').style.display='';document.getElementById('showNew').style.display='none';
+    setTimeout(()=>document.getElementById('newName').focus(),60);
+  };
+  document.getElementById('newCancel').onclick=()=>{
+    document.getElementById('authNew').style.display='none';document.getElementById('showNew').style.display='';
+  };
+  document.getElementById('newCreate').onclick=createUser;
+  document.getElementById('newName').onkeydown=e=>{if(e.key==='Enter')document.getElementById('newPin').focus();};
+  document.getElementById('newPin').onkeydown=e=>{if(e.key==='Enter')createUser();};
+  document.getElementById('userBtn').onclick=openAcct;
+  document.getElementById('acctClose').onclick=closeAcct;
+  document.getElementById('acctModal').onclick=e=>{if(e.target.id==='acctModal')closeAcct();};
+  document.getElementById('acctSwitch').onclick=()=>{if(CLOUD())logoutCloud();else{closeAcct();showAuth();}};
+  document.getElementById('acctTemplate').onclick=pullTemplate;
+  document.getElementById('acctMerge').onclick=mergeTemplate;
+  document.getElementById('acctRename').onclick=renameUser;
+  document.getElementById('acctPin').onclick=()=>{if(CLOUD())cloudSetPass();else setPin();};
+  document.getElementById('acctClearRecs').onclick=clearAllRecords;
+  document.getElementById('acctDelete').onclick=deleteAccount;
+  /* cloud login form */
+  document.getElementById('clLogin').onclick=cloudSubmit;
+  document.getElementById('clToReg').onclick=()=>{cloudReg=!cloudReg;updateCloudForm();};
+  document.getElementById('clUser').onkeydown=e=>{if(e.key==='Enter')document.getElementById('clPass').focus();};
+  document.getElementById('clPass').onkeydown=e=>{if(e.key==='Enter')cloudSubmit();};
+  document.getElementById('syncDot').onclick=()=>{
+    if(!currentUser||!currentUser.token)return;
+    const st=document.getElementById('syncDot').dataset.state;
+    if(st==='offline'||st==='error')pushCloud();else refreshFromCloud();
+  };
+}
+
+/* ============================================================
+   EVENTS / INIT
+   ============================================================ */
+function bind(){
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    document.querySelectorAll('.tab-page').forEach(p=>p.classList.toggle('on',p.id==='tab-'+b.dataset.tab));
+  });
+  document.getElementById('monthSel').onchange=e=>{currentMonth=e.target.value;renderAll();};
+  ['rCard','rCat','rAmount','rDate'].forEach(id=>document.getElementById(id).addEventListener('input',updatePreview));
+  document.getElementById('rBonus').addEventListener('change',updatePreview);
+  document.getElementById('manageCatsBtn').onclick=openCatModal;
+  document.getElementById('catClose').onclick=closeCatModal;
+  document.getElementById('catModal').onclick=e=>{if(e.target.id==='catModal')closeCatModal();};
+  document.getElementById('addCatBtn').onclick=addCat;
+  document.getElementById('newCatName').onkeydown=e=>{if(e.key==='Enter')addCat();};
+  document.getElementById('addRecBtn').onclick=addRecord;
+  document.getElementById('filterCard').onchange=renderRecords;
+  document.getElementById('filterCat').onchange=renderRecords;
+  document.getElementById('closeModal').onclick=closeCardModal;
+  document.getElementById('cardModal').onclick=e=>{if(e.target.id==='cardModal')closeCardModal();};
+  document.getElementById('saveCardBtn').onclick=saveCard;
+  document.getElementById('delCardBtn').onclick=deleteCard;
+  document.getElementById('exportBtn').onclick=exportData;
+  document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+  document.getElementById('importFile').onchange=e=>{if(e.target.files[0])importData(e.target.files[0]);e.target.value='';};
+}
+
+function init(){
+  buildModalStatics();
+  bind();
+  bindAuth();
+  setSync('ok');
+  if(CLOUD()){
+    let sess=null; try{sess=JSON.parse(localStorage.getItem(CLOUD_SESSION)||'null')}catch(e){}
+    if(sess&&sess.token){
+      currentUser={id:'cloud_'+sess.name,name:sess.name,token:sess.token};
+      load();
+      document.getElementById('rDate').value=todayStr();
+      document.getElementById('authScreen').classList.remove('on');
+      renderUserButton();renderAll();
+      refreshFromCloud();
+    }else{showAuth();}
+    return;
+  }
+  migrateLegacy();
+  const u=getUsers().find(x=>x.id===localStorage.getItem(CUR_KEY));
+  if(u){enterApp(u);}else{showAuth();}
+}
+init();
+</script>
+</body>
+</html>
